@@ -1,0 +1,22 @@
+{
+  "name": "firefox-app-validator",
+  "version": "0.0.1",
+  "description": "App validation for https://marketplace.firefox.com",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "~1.18.2",
+    "should": "~3.2.0",
+    "nock": "~0.28.2"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ednapiranha/node-firefox-app-validator.git"
+  },
+  "keywords": [],
+  "author": "Edna Piranha <jen@ednapiranha.com> (http://ednapiranha.com)",
+  "license": "MPL-2.0"
+}
