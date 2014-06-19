@@ -3,11 +3,12 @@
   "version": "0.0.1",
   "description": "App validation for https://marketplace.firefox.com",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+
+  },
   "devDependencies": {
-    "mocha": "~1.18.2",
-    "should": "~3.2.0",
-    "nock": "~0.28.2"
+    "mocha": "~1.20.1",
+    "should": "~4.0.4"
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha"

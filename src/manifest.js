@@ -1,6 +1,73 @@
 'use strict';
 
+var fs = require('fs');
 
+var Manifest = function () {
+  this.appPath  = '';
+  this.manifest;
+
+  var self = this;
+  var fileArr = [];
+
+  // Get all files in the packaged app
+  this.setFiles = function (next) {
+    fileArr = [];
+    var files = fs.readdirSync(this.appPath);
+    var count = 0;
+
+    for (var i in files) {
+      count ++;
+
+      if (!files.hasOwnProperty(i)) {
+        continue;
+      }
+
+      var name = this.appPath + '/' + files[i];
+
+      if (fs.statSync(name).isDirectory()) {
+        // secondary+ levels
+        getFiles();
+      } else {
+        // first level
+        fileArr.push(name);
+
+        if (count === files.length) {
+          next(null, fileArr);
+        }
+      }
+    }
+  };
+
+  /*
+   * Rule: Check if manifest.webapp exists
+   * Rule: Check if manifest.webapp contains valid JSON
+   */
+  this.validateManifest = function (next) {
+    if (fileArr.indexOf(this.appPath + '/manifest.webapp') === -1) {
+      next(new Error('No manifest.webapp file found'));
+      return;
+    }
+
+    fs.readFile(this.appPath + '/manifest.webapp', 'utf8', function (err, data) {
+      if (err) {
+        next(err);
+        return;
+      }
+
+      try {
+        self.manifest = JSON.parse(data);
+        next(null, self.manifest);
+      } catch (err) {
+        next(new Error('Manifest is not in a valid JSON format'));
+        return;
+      }
+    });
+  };
+};
+
+module.exports = Manifest;
+
+/*
 var RULES = {
   "expected_type": "object",
   "required_nodes": ["name", "description", "developer"],
@@ -142,8 +209,8 @@ var RULES = {
     },
     "origin": {
         "expected_type": "string",
-        "value_matches": /^app:\/\/[a-z0-9]+([-.]{1}[a-z0-9]+)*/
-                         /\.[a-z]{2,5}$/,
+        "value_matches": /^app:\/\/[a-z0-9]+([-.{1}[a-z0-9]+)/
+                         /\.[a-z]{2,5}$/]
         "process": lambda s: s.process_origin,
     },
     "chrome": {
@@ -156,3 +223,4 @@ var RULES = {
     }
   }
 };
+*/
