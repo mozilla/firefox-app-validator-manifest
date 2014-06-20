@@ -1,7 +1,7 @@
 {
-  "name": "firefox-app-validator",
+  "name": "firefox-app-validator-manifest",
   "version": "0.0.1",
-  "description": "App validation for https://marketplace.firefox.com",
+  "description": "App validation (manifest) for https://marketplace.firefox.com",
   "main": "index.js",
   "dependencies": {
 
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/ednapiranha/node-firefox-app-validator.git"
+    "url": "git://github.com/ednapiranha/node-firefox-app-validator-manifest.git"
   },
   "keywords": [],
   "author": "Edna Piranha <jen@ednapiranha.com> (http://ednapiranha.com)",

@@ -1,5 +1,5 @@
-# Firefox App Validator
+# Firefox App Validator (Manifest)
 
 WIP
 
-This validates your Firefox packaged app for submission into https://marketplace.firefox.com.
+This validates your Firefox app manifest for submission into https://marketplace.firefox.com.
