@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 var should = require('should');
-var Manifest = require('../src/manifest');
+var Manifest = require('../index');
 var m = new Manifest();
 var content = '';
 
