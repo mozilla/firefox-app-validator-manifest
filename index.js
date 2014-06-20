@@ -1,6 +1,7 @@
 'use strict';
 
-var fs = require('fs');
+var sMarketplace = require('./rules/marketplace.json');
+var sNonmarketplace = require('./rules/non-marketplace.json');
 
 var Manifest = function () {
   this.manifest;
@@ -18,11 +19,11 @@ var Manifest = function () {
   };
 
   var hasMandatoryKeys = function () {
-    var keys = ['name', 'description'];
     var missingKeys = [];
+    var keys = sMarketplace.required;
 
-    if (self.appType === 'mkt') {
-      keys.push('developer');
+    if (self.appType !== 'mkt') {
+      keys = sNonmarketplace.required;
     }
 
     for (var i = 0; i < keys.length; i ++) {
@@ -36,6 +37,7 @@ var Manifest = function () {
 
   this.validate = function (content) {
     this.errors = {};
+
     hasValidJSON(content);
     hasMandatoryKeys();
   };

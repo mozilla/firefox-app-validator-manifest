@@ -22,4 +22,16 @@ describe('validate', function () {
       currKey.toString().should.equal('Error: Mandatory field ' + f + ' is missing');
     });
   });
+
+  it('should return an invalid manifest with missing mandatory keys for non-marketplace', function () {
+    content = '{}';
+    m.appType = '';
+    m.validate(content);
+
+    ['name', 'description'].forEach(function (f) {
+      var currKey = m.errors['MandatoryField' + f.charAt(0).toUpperCase() + f.slice(1)];
+      currKey.toString().should.equal('Error: Mandatory field ' + f + ' is missing');
+      should.not.exist(m.errors.MandatoryFieldDeveloper);
+    });
+  });
 });
