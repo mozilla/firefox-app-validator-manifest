@@ -6,7 +6,7 @@ var should = require('should');
 var Manifest = require('../src/manifest');
 var m = new Manifest();
 
-describe('validatePath', function () {
+describe('setFiles', function () {
   it('should return an array of files in the packaged app path', function (done) {
     m.appPath = './test/apps/app2';
 
