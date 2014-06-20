@@ -4,6 +4,7 @@ var fs = require('fs');
 
 var Manifest = function () {
   this.manifest;
+  this.appType = 'mkt';
 
   var self = this;
 
@@ -15,8 +16,28 @@ var Manifest = function () {
     }
   };
 
+  var hasMandatoryKeys = function () {
+    var keys = ['name', 'description'];
+    var missingKeys = [];
+
+    if (self.appType === 'mkt') {
+      keys.push('developer');
+    }
+
+    for (var i = 0; i < keys.length; i ++) {
+      if (!self.manifest[keys[i]]) {
+        missingKeys.push(keys[i]);
+      }
+    }
+
+    if (missingKeys.length > 0) {
+      throw new Error('Manifest is missing mandatory fields: ' + missingKeys.join(', '));
+    }
+  };
+
   this.validate = function (content) {
     hasValidJSON(content);
+    hasMandatoryKeys();
   };
 };
 
