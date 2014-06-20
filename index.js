@@ -1,7 +1,7 @@
 'use strict';
 
+var common = require('./rules/common.json');
 var sMarketplace = require('./rules/marketplace.json');
-var sNonmarketplace = require('./rules/non-marketplace.json');
 
 var Manifest = function () {
   this.manifest;
@@ -20,10 +20,10 @@ var Manifest = function () {
 
   var hasMandatoryKeys = function () {
     var missingKeys = [];
-    var keys = sMarketplace.required;
+    var keys = common.required;
 
-    if (self.appType !== 'mkt') {
-      keys = sNonmarketplace.required;
+    if (self.appType === 'mkt') {
+      keys = sMarketplace.required;
     }
 
     for (var i = 0; i < keys.length; i ++) {

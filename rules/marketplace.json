@@ -1,21 +1,3 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "Marketplace",
-    "description": "Firefox Marketplace manifest.webapp file",
-    "type": "object",
-    "properties": {
-        "name": {
-            "description": "App name",
-            "type": "string"
-        },
-        "description": {
-            "description": "Description of app",
-            "type": "string"
-        },
-        "developer": {
-            "description": "Name of app developer",
-            "type": "string"
-        }
-    },
     "required": ["name", "description", "developer"]
 }
