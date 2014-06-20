@@ -7,17 +7,19 @@ var Manifest = function () {
 
   var self = this;
 
+  var hasValidJSON = function (content) {
+    try {
+      self.manifest = JSON.parse(content);
+    } catch (err) {
+      throw new Error('Manifest is not in a valid JSON format');
+    }
+  };
+
   /*
    * Rule: Check if manifest.webapp contains valid JSON
    */
-  this.validate = function (content, next) {
-    try {
-      this.manifest = JSON.parse(content);
-      next(null, this.manifest);
-    } catch (err) {
-      next(new Error('Manifest is not in a valid JSON format'));
-      return;
-    }
+  this.validate = function (content) {
+    hasValidJSON(content);
   };
 };
 

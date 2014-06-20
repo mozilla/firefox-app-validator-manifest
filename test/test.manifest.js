@@ -8,21 +8,18 @@ var m = new Manifest();
 var content = '';
 
 describe('validate', function () {
-  it('should return an invalid manifest error', function (done) {
-    m.validate(content, function (err, result) {
-      should.exist(err);
-      err.toString().should.equal('Error: Manifest is not in a valid JSON format');
-      done();
-    });
+  it('should return an invalid manifest error', function () {
+    try {
+      var manifest = m.validate(content);
+    } catch (err) {
+      should.throws(err);
+    }
   });
 
-  it('should return an valid manifest object', function (done) {
+  it('should return an valid manifest object', function () {
     content = '{}';
 
-    m.validate(content, function (err, result) {
-      should.exist(result);
-      result.should.eql({});
-      done();
-    });
+    var manifest = m.validate(content);
+    m.manifest.should.eql({});
   });
 });
