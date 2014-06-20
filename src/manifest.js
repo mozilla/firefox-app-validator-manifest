@@ -15,9 +15,6 @@ var Manifest = function () {
     }
   };
 
-  /*
-   * Rule: Check if manifest.webapp contains valid JSON
-   */
   this.validate = function (content) {
     hasValidJSON(content);
   };
