@@ -5,14 +5,16 @@ var fs = require('fs');
 var Manifest = function () {
   this.manifest;
   this.appType = 'mkt';
+  this.errors = {};
 
   var self = this;
 
   var hasValidJSON = function (content) {
     try {
       self.manifest = JSON.parse(content);
+      delete self.errors.InvalidJSON;
     } catch (err) {
-      throw new Error('Manifest is not in a valid JSON format');
+      self.errors.InvalidJSON = new Error('Manifest is not in a valid JSON format');
     }
   };
 
@@ -25,13 +27,13 @@ var Manifest = function () {
     }
 
     for (var i = 0; i < keys.length; i ++) {
-      if (!self.manifest[keys[i]]) {
-        missingKeys.push(keys[i]);
-      }
-    }
+      var currKey = keys[i].charAt(0).toUpperCase() + keys[i].slice(1);
 
-    if (missingKeys.length > 0) {
-      throw new Error('Manifest is missing mandatory fields: ' + missingKeys.join(', '));
+      if (!self.manifest || !self.manifest[keys[i]]) {
+        self.errors['MandatoryField' + currKey] = new Error('Mandatory field ' + keys[i] + ' is missing');
+      } else {
+        delete self.errors['MandatoryField' + currKey];
+      }
     }
   };
 
