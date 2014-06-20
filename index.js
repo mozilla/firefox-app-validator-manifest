@@ -12,7 +12,6 @@ var Manifest = function () {
   var hasValidJSON = function (content) {
     try {
       self.manifest = JSON.parse(content);
-      delete self.errors.InvalidJSON;
     } catch (err) {
       self.errors.InvalidJSON = new Error('Manifest is not in a valid JSON format');
     }
@@ -31,13 +30,12 @@ var Manifest = function () {
 
       if (!self.manifest || !self.manifest[keys[i]]) {
         self.errors['MandatoryField' + currKey] = new Error('Mandatory field ' + keys[i] + ' is missing');
-      } else {
-        delete self.errors['MandatoryField' + currKey];
       }
     }
   };
 
   this.validate = function (content) {
+    this.errors = {};
     hasValidJSON(content);
     hasMandatoryKeys();
   };
