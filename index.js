@@ -23,7 +23,7 @@ var Manifest = function () {
     var keys = common.required;
 
     if (self.appType === 'mkt') {
-      keys = sMarketplace.required;
+      keys = keys.concat(sMarketplace.required);
     }
 
     for (var i = 0; i < keys.length; i ++) {

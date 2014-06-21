@@ -9,5 +9,5 @@
             "type": "string"
         }
     },
-    "required": ["name", "description", "developer"]
+    "required": ["developer"]
 }
