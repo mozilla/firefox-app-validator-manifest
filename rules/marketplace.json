@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "Marketplace",
-    "description": "Firefox Marketplace manifest.webapp file",
+    "description": "Firefox Marketplace manifest.webapp file - marketplace-specific",
     "type": "object",
     "properties": {
         "developer": {
