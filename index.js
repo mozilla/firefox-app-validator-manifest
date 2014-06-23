@@ -1,12 +1,26 @@
-'use strict';
-
 var common = require('./rules/common.json');
 var sMarketplace = require('./rules/marketplace.json');
+
+var Warning = function (message) {
+  this.name = 'Warning';
+  this.message = message || '';
+};
+
+Warning.prototype = Error.prototype;
 
 var Manifest = function () {
   this.manifest;
   this.appType = 'mkt';
-  this.errors = {};
+
+  var errors = {};
+  var warnings = {};
+
+  var onceMatchFields = [
+    'activities', 'appcache_path', 'chrome', 'csp', 'default_locale', 'fullscreen',
+    'icons', 'inputs', 'installs_allowed_from', 'launch_path', 'locales', 'messages',
+    'orientation', 'origin', 'permissions', 'redirects', 'required_features', 'role',
+    'screen_size', 'type', 'version'
+  ];
 
   var self = this;
 
@@ -14,7 +28,7 @@ var Manifest = function () {
     try {
       self.manifest = JSON.parse(content);
     } catch (err) {
-      self.errors.InvalidJSON = new Error('Manifest is not in a valid JSON format');
+      errors.InvalidJSON = new Error('Manifest is not in a valid JSON format');
     }
   };
 
@@ -30,44 +44,46 @@ var Manifest = function () {
       var currKey = keys[i].charAt(0).toUpperCase() + keys[i].slice(1);
 
       if (!self.manifest || !self.manifest[keys[i]]) {
-        self.errors['MandatoryField' + currKey] = new Error('Mandatory field ' + keys[i] + ' is missing');
+        errors['MandatoryField' + currKey] = new Error('Mandatory field ' + keys[i] + ' is missing');
+      }
+    }
+  };
+
+  var hasOnceMatchedFields = function () {
+    var keys = onceMatchFields;
+
+    for (var i = 0; i < keys.length; i ++) {
+      var currKey = keys[i].charAt(0).toUpperCase() + keys[i].slice(1);
+
+      if (!self.manifest || !self.manifest[keys[i]]) {
+        warnings['Field' + currKey] = new Warning('Duplicate field ' + keys[i]);
       }
     }
   };
 
   this.validate = function (content) {
-    this.errors = {};
+    errors = {};
+    warnings = {};
 
     hasValidJSON(content);
     hasMandatoryKeys();
+    hasOnceMatchedFields();
+
+    return {
+      errors: errors,
+      warnings: warnings
+    };
   };
 };
 
+module.exports = Warning;
 module.exports = Manifest;
 
 /*
 var RULES = {
-  "expected_type": "object",
-  "required_nodes": ["name", "description", "developer"],
   "required_nodes_when": {"default_locale": lambda n: "locales" in n},
-  "allowed_once_nodes": ["launch_path", "icons", "locales",
-                         "default_locale", "installs_allowed_from",
-                         "version", "screen_size", "required_features",
-                         "orientation", "fullscreen", "appcache_path",
-                         "type", "activities", "permissions", "csp",
-                         "messages", "origin", "redirects",
-                         "permissions", "chrome", "inputs", "role"]
-  "allowed_nodes": [],
   "disallowed_nodes": ["widget"],
   "child_nodes": {
-    "name": {"expected_type": "string",
-             "max_length": 128,
-             "not_empty": true},
-    "role": {"expected_type": "string",
-             "values": ["system", "input", "homescreen"]},
-    "description": {"expected_type": "string",
-                    "max_length": 1024,
-                    "not_empty": true},
     "launch_path": {"expected_type": "string",
                     "process": lambda s: s.process_launch_path,
                     "not_empty": true},
