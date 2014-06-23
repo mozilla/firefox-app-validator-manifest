@@ -1,17 +1,80 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "Marketplace",
-    "description": "Firefox Marketplace manifest.webapp file",
+    "description": "Firefox Marketplace manifest.webapp file - shared",
     "type": "object",
     "properties": {
-        "name": {
-            "description": "App name",
-            "type": "string"
+        "activities": {
+
+        },
+        "appcache_path": {
+
+        },
+        "chrome": {
+
+        },
+        "csp": {
+
+        },
+        "default_locale": {
+
         },
         "description": {
             "description": "Description of app",
             "type": "string"
+        },
+        "fullscreen": {
+
+        },
+        "icons": {
+
+        },
+        "inputs": {
+
+        },
+        "installs_allowed_from": {
+
+        },
+        "launch_path": {
+
+        },
+        "locales": {
+
+        },
+        "messages": {
+
+        },
+        "name": {
+            "description": "App name",
+            "type": "string"
+        },
+        "orientation": {
+
+        },
+        "origin": {
+
+        },
+        "permissions": {
+
+        },
+        "redirects": {
+
+        },
+        "required_features": {
+
+        },
+        "role": {
+
+        },
+        "screen_size": {
+
+        },
+        "type": {
+
+        },
+        "version": {
+
         }
     },
-    "required": ["name", "description"]
+    "required": ["description", "name"]
 }
