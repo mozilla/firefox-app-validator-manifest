@@ -17,11 +17,12 @@
 
         },
         "default_locale": {
-
+            "type": "string"
         },
         "description": {
             "description": "Description of app",
-            "type": "string"
+            "type": "string",
+            "maxLength": 1024
         },
         "fullscreen": {
 
@@ -39,14 +40,15 @@
 
         },
         "locales": {
-
+            "type": "object"
         },
         "messages": {
 
         },
         "name": {
             "description": "App name",
-            "type": "string"
+            "type": "string",
+            "maxLength": 128
         },
         "orientation": {
 
@@ -64,7 +66,8 @@
 
         },
         "role": {
-
+            "type": "string",
+            "oneOf": ["system", "input", "homescreen"]
         },
         "screen_size": {
 
@@ -75,6 +78,9 @@
         "version": {
 
         }
+    },
+    "dependencies": {
+        "default_locale": ["locales"]
     },
     "required": ["description", "name"]
 }
