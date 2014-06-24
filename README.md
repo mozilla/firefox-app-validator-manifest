@@ -12,7 +12,9 @@ This validates your Firefox app manifest for submission into https://marketplace
 
 ## Discussion points for manifest schema (re)design?
 
-* Redesigning the `icons` data from having arbitrary key names, e.g. changing:
+* Redesigning the `icons` data from having arbitrary key names
+
+e.g. changing:
 
     {
       '128': '/path/to/128-icon.png',
