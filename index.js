@@ -83,9 +83,17 @@ var Manifest = function () {
     }
   };
 
+  // Icon validation is based on a key name that is tied to the icon size. Can't set this in the schema
+  // if it is an arbitrary natural number, so this will suffice for current manifest validation.
   var hasValidIconSize = function () {
     if (self.manifest.icons) {
+      for (var k in self.manifest.icons) {
+        var key = parseInt(k, 10);
 
+        if (isNaN(key) || key < 1) {
+          errors['InvalidIconSize'] = new Error('Icon size must be a natural number');
+        }
+      }
     }
   };
 
@@ -97,6 +105,7 @@ var Manifest = function () {
     hasMandatoryKeys();
     hasValidPropertyTypes();
     hasValidLaunchPath();
+    hasValidIconSize();
 
     return {
       errors: errors,

@@ -73,4 +73,18 @@ describe('validate', function () {
 
     results.errors['InvalidLaunchPath'].toString().should.equal("Error: `launch_path` must be a path relative to app's origin");
   });
+
+  it('should have a valid icon size', function () {
+    content = {
+      description: 'test app',
+      icons: {
+        a: '/path/to/icon.png'
+      },
+      name: 'app'
+    };
+
+    var results = m.validate(content);
+
+    results.errors['InvalidIconSize'].toString().should.equal('Error: Icon size must be a natural number');
+  });
 });
