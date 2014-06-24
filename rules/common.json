@@ -37,7 +37,8 @@
 
         },
         "launch_path": {
-
+            "type": "string",
+            "pattern": "^\/[^\/]"
         },
         "locales": {
             "type": "object"
