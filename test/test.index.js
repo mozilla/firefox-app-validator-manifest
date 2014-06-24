@@ -51,6 +51,17 @@ describe('validate', function () {
     }
   });
 
+  it('should return an invalid property type', function () {
+    content = {
+      description: 'test app',
+      launch_path: [],
+      name: 'app'
+    };
+
+    var results = m.validate(content);
+    results.errors['InvalidPropertyTypeLaunchPath'].toString().should.equal("Error: `launch_path` must be of type `string`");
+  });
+
   it('should return an invalid launch path', function () {
     content = {
       description: 'test app',
@@ -60,6 +71,6 @@ describe('validate', function () {
 
     var results = m.validate(content);
 
-    results.errors['InvalidLaunchPath'].toString().should.equal("Error: `launch_path` must be a path relative to app's origin.");
+    results.errors['InvalidLaunchPath'].toString().should.equal("Error: `launch_path` must be a path relative to app's origin");
   });
 });

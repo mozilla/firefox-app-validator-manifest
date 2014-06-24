@@ -63,16 +63,29 @@ var Manifest = function () {
     }
   };
 
+  var hasValidPropertyTypes = function () {
+    for (var k in self.manifest) {
+      if (typeof self.manifest[k] !== common.properties[k].type) {
+        errors['InvalidPropertyType' + camelCase(k)] = new Error('`' + k + '` must be of type `' + common.properties[k].type + '`');
+      }
+    }
+  };
+
   var hasValidLaunchPath = function () {
-    //console.log('*** ', common.properties.launch_path.pattern)
-    if (common.properties.launch_path) {
+    if (self.manifest.launch_path) {
       var pattern = new RegExp(common.properties.launch_path.pattern);
 
       if (self.manifest.launch_path && clean(self.manifest.launch_path).length > 0) {
         if (!pattern.test(self.manifest.launch_path)) {
-          errors['InvalidLaunchPath'] = new Error("`launch_path` must be a path relative to app's origin.");
+          errors['InvalidLaunchPath'] = new Error("`launch_path` must be a path relative to app's origin");
         }
       }
+    }
+  };
+
+  var hasValidIconSize = function () {
+    if (self.manifest.icons) {
+
     }
   };
 
@@ -82,6 +95,7 @@ var Manifest = function () {
 
     hasValidJSON(content);
     hasMandatoryKeys();
+    hasValidPropertyTypes();
     hasValidLaunchPath();
 
     return {
