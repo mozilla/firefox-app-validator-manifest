@@ -19,16 +19,29 @@
         "default_locale": {
             "type": "string"
         },
+        "developer": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "description": {
             "description": "Description of app",
             "type": "string",
-            "maxLength": 1024
+            "maxLength": 1024,
+            "minLength": 1
         },
         "fullscreen": {
 
         },
         "icons": {
-
+            "type": "object"
         },
         "inputs": {
 
@@ -38,7 +51,8 @@
         },
         "launch_path": {
             "type": "string",
-            "pattern": "^\/[^\/]"
+            "pattern": "^\/[^\/]",
+            "minLength": 1
         },
         "locales": {
             "type": "object"
@@ -49,10 +63,14 @@
         "name": {
             "description": "App name",
             "type": "string",
-            "maxLength": 128
+            "maxLength": 128,
+            "minLength": 1
         },
         "orientation": {
-
+            "type": {
+                "enum": ["portrait", "landscape"]
+            },
+            "required": ["type"]
         },
         "origin": {
 
