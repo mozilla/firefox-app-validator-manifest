@@ -85,13 +85,17 @@ var Manifest = function () {
 
   // Icon validation is based on a key name that is tied to the icon size. Can't set this in the schema
   // if it is an arbitrary natural number, so this will suffice for current manifest validation.
-  var hasValidIconSize = function () {
+  var hasValidIconSizeAndPath = function () {
     if (self.manifest.icons) {
       for (var k in self.manifest.icons) {
         var key = parseInt(k, 10);
 
         if (isNaN(key) || key < 1) {
-          errors['InvalidIconSize'] = new Error('Icon size must be a natural number');
+          errors['InvalidIconSize' + camelCase(k)] = new Error('Icon size must be a natural number');
+        }
+
+        if (!self.manifest.icons[k] || self.manifest.icons[k].length < 1) {
+          errors['InvalidIconPath' + camelCase(k)] = new Error('Paths to icons must be absolute paths, relative URIs, or data URIs');
         }
       }
     }
@@ -105,7 +109,7 @@ var Manifest = function () {
     hasMandatoryKeys();
     hasValidPropertyTypes();
     hasValidLaunchPath();
-    hasValidIconSize();
+    hasValidIconSizeAndPath();
 
     return {
       errors: errors,
@@ -122,9 +126,6 @@ var RULES = {
   "required_nodes_when": {"default_locale": lambda n: "locales" in n},
   "disallowed_nodes": ["widget"],
   "child_nodes": {
-    "icons": {"expected_type": "object",
-              "child_process": lambda s: s.process_icon_size,
-              "process": lambda s: s.process_icons},
     "developer":
         {"expected_type": "object",
          "child_nodes": {"name": {"expected_type": "string",
