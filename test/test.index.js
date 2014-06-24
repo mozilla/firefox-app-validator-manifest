@@ -7,8 +7,11 @@ var content = '';
 
 describe('validate', function () {
   it('should return an invalid manifest object', function () {
-    var results = m.validate(content);
-    results.errors.InvalidJSON.toString().should.equal('Error: Manifest is not in a valid JSON format');
+    try {
+      var results = m.validate(content);
+    } catch (err) {
+      err.toString().should.equal('Error: Manifest is not in a valid JSON format or has invalid properties');
+    }
   });
 
   it('should return an invalid manifest with missing mandatory keys for the marketplace', function () {
@@ -33,23 +36,30 @@ describe('validate', function () {
     });
   });
 
-  it('should return warnings about duplicate fields', function () {
-    var fields = ['activities', 'appcache_path'];
-
+  it('should return an invalid manifest for duplicate fields', function () {
     content = {
       activities: '1',
       activities: '2',
-      appcache_path: '/',
-      appcache_path: '/',
       description: 'test app',
+      name: 'app'
+    };
+
+    try {
+      var results = m.validate(content);
+    } catch (err) {
+      err.toString().should.equal('Error: Manifest is not in a valid JSON format or has invalid properties');
+    }
+  });
+
+  it('should return an invalid launch path', function () {
+    content = {
+      description: 'test app',
+      launch_path: '//',
       name: 'app'
     };
 
     var results = m.validate(content);
 
-    fields.forEach(function (f) {
-      var currKey = results.warnings['Field' + f.charAt(0).toUpperCase() + f.slice(1)];
-      currKey.toString().should.equal('Warning: Duplicate field ' + f);
-    });
+    results.errors['InvalidLaunchPath'].toString().should.equal("Error: `launch_path` must be a path relative to app's origin.");
   });
 });

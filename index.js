@@ -1,3 +1,5 @@
+'use strict';
+
 var common = require('./rules/common.json');
 var sMarketplace = require('./rules/marketplace.json');
 
@@ -8,6 +10,21 @@ var Warning = function (message) {
 
 Warning.prototype = Error.prototype;
 
+var clean = function (word) {
+  return word.toString().trim();
+};
+
+var camelCase = function (word) {
+  var words = word.split('_');
+  var finalWord = [];
+
+  words.forEach(function (w) {
+    finalWord.push(w.charAt(0).toUpperCase() + w.slice(1));
+  });
+
+  return finalWord.join('');
+};
+
 var Manifest = function () {
   this.manifest;
   this.appType = 'mkt';
@@ -15,20 +32,17 @@ var Manifest = function () {
   var errors = {};
   var warnings = {};
 
-  var onceMatchFields = [
-    'activities', 'appcache_path', 'chrome', 'csp', 'default_locale', 'fullscreen',
-    'icons', 'inputs', 'installs_allowed_from', 'launch_path', 'locales', 'messages',
-    'orientation', 'origin', 'permissions', 'redirects', 'required_features', 'role',
-    'screen_size', 'type', 'version'
-  ];
-
   var self = this;
 
   var hasValidJSON = function (content) {
     try {
-      self.manifest = JSON.parse(content);
+      if (typeof content !== 'object') {
+        self.manifest = JSON.parse(content);
+      } else {
+        self.manifest = content;
+      }
     } catch (err) {
-      errors.InvalidJSON = new Error('Manifest is not in a valid JSON format');
+      throw new Error('Manifest is not in a valid JSON format or has invalid properties');
     }
   };
 
@@ -41,7 +55,7 @@ var Manifest = function () {
     }
 
     for (var i = 0; i < keys.length; i ++) {
-      var currKey = keys[i].charAt(0).toUpperCase() + keys[i].slice(1);
+      var currKey = camelCase(keys[i]);
 
       if (!self.manifest || !self.manifest[keys[i]]) {
         errors['MandatoryField' + currKey] = new Error('Mandatory field ' + keys[i] + ' is missing');
@@ -49,14 +63,15 @@ var Manifest = function () {
     }
   };
 
-  var hasOnceMatchedFields = function () {
-    var keys = onceMatchFields;
+  var hasValidLaunchPath = function () {
+    //console.log('*** ', common.properties.launch_path.pattern)
+    if (common.properties.launch_path) {
+      var pattern = new RegExp(common.properties.launch_path.pattern);
 
-    for (var i = 0; i < keys.length; i ++) {
-      var currKey = keys[i].charAt(0).toUpperCase() + keys[i].slice(1);
-
-      if (!self.manifest || !self.manifest[keys[i]]) {
-        warnings['Field' + currKey] = new Warning('Duplicate field ' + keys[i]);
+      if (self.manifest.launch_path && clean(self.manifest.launch_path).length > 0) {
+        if (!pattern.test(self.manifest.launch_path)) {
+          errors['InvalidLaunchPath'] = new Error("`launch_path` must be a path relative to app's origin.");
+        }
       }
     }
   };
@@ -67,7 +82,7 @@ var Manifest = function () {
 
     hasValidJSON(content);
     hasMandatoryKeys();
-    hasOnceMatchedFields();
+    hasValidLaunchPath();
 
     return {
       errors: errors,
@@ -84,9 +99,6 @@ var RULES = {
   "required_nodes_when": {"default_locale": lambda n: "locales" in n},
   "disallowed_nodes": ["widget"],
   "child_nodes": {
-    "launch_path": {"expected_type": "string",
-                    "process": lambda s: s.process_launch_path,
-                    "not_empty": true},
     "icons": {"expected_type": "object",
               "child_process": lambda s: s.process_icon_size,
               "process": lambda s: s.process_icons},
