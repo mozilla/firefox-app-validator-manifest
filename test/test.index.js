@@ -68,7 +68,15 @@ describe('validate', function () {
     results.errors['InvalidLaunchPath'].toString().should.equal("Error: `launch_path` must be a path relative to app's origin");
   });
 
-  it('should have a valid icon size and valid icon path', function () {
+  it('should return a valid launch path', function () {
+    common.launch_path = '/';
+
+    var results = m.validate(common);
+
+    should.not.exist(results.errors['InvalidLaunchPath']);
+  });
+
+  it('should have an invalid icon size and invalid icon path', function () {
     common.icons = {
       a: ''
     };
@@ -79,11 +87,46 @@ describe('validate', function () {
     results.errors['InvalidIconPathA'].toString().should.equal('Error: Paths to icons must be absolute paths, relative URIs, or data URIs');
   });
 
-  it('should have a valid length if a minLength is provided', function () {
+  it('should have a valid icon size and valid icon path', function () {
+    common.icons = {
+      '128': '/path/to/icon.png'
+    };
+
+    var results = m.validate(common);
+
+    should.not.exist(results.errors['InvalidIconSize128']);
+    should.not.exist(results.errors['InvalidIconPath128']);
+  });
+
+  it('should have an invalid length if a minLength is provided', function () {
     common.default_locale = '';
 
     var results = m.validate(common);
 
     results.errors['InvalidPropertyLengthDefaultLocale'].toString().should.equal('Error: `default_locale` must not be empty');
+  });
+
+  it('should have a valid length if a minLength is provided', function () {
+    common.default_locale = 'en';
+
+    var results = m.validate(common);
+
+    should.not.exist(results.errors['InvalidPropertyLengthDefaultLocale']);
+  });
+
+  it('should have an invalid version', function () {
+    common.version = 'v1.0!!';
+
+    var results = m.validate(common);
+
+    results.errors['InvalidVersion'].toString().should.equal('Error: `version` is in an invalid format.');
+  });
+
+  it('should have a valid version', function () {
+    common.version = 'v1.0';
+
+    var results = m.validate(common);
+
+    should.not.exist(results.errors['InvalidVersion']);
   });
 });

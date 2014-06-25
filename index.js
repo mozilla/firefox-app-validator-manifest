@@ -19,7 +19,7 @@ var camelCase = function (word) {
   var finalWord = [];
 
   words.forEach(function (w) {
-    finalWord.push(w.charAt(0).toUpperCase() + w.slice(1));
+    finalWord.push(clean(w.charAt(0).toUpperCase() + w.slice(1)));
   });
 
   return finalWord.join('');
@@ -82,9 +82,10 @@ var Manifest = function () {
   var hasValidLaunchPath = function () {
     if (self.manifest.launch_path) {
       var pattern = new RegExp(common.properties.launch_path.pattern);
+      var launchPath = clean(self.manifest.launch_path);
 
-      if (self.manifest.launch_path && clean(self.manifest.launch_path).length > 0) {
-        if (!pattern.test(self.manifest.launch_path)) {
+      if (launchPath.length > 0) {
+        if (pattern.test(launchPath) === false) {
           errors['InvalidLaunchPath'] = new Error("`launch_path` must be a path relative to app's origin");
         }
       }
@@ -109,6 +110,16 @@ var Manifest = function () {
     }
   };
 
+  var hasValidVersion = function () {
+    if (self.manifest.version) {
+      var pattern = new RegExp(common.properties.version.pattern);
+
+      if (pattern.test(clean(self.manifest.version)) === false) {
+        errors['InvalidVersion'] = new Error('`version` is in an invalid format.');
+      }
+    }
+  };
+
   this.validate = function (content) {
     errors = {};
     warnings = {};
@@ -119,6 +130,7 @@ var Manifest = function () {
     hasRequiredLength();
     hasValidLaunchPath();
     hasValidIconSizeAndPath();
+    hasValidVersion();
 
     return {
       errors: errors,

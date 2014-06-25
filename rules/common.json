@@ -52,7 +52,7 @@
         },
         "launch_path": {
             "type": "string",
-            "pattern": "^\/[^\/]",
+            "pattern": "^(/\\w+)*/?$",
             "minLength": 1
         },
         "locales": {
@@ -96,7 +96,9 @@
 
         },
         "version": {
-
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_,*-.]+$",
+            "minLength": 1
         }
     },
     "dependencies": {
