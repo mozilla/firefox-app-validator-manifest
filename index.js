@@ -71,6 +71,14 @@ var Manifest = function () {
     }
   };
 
+  var hasRequiredLength = function () {
+    for (var k in self.manifest) {
+      if (common.properties[k].minLength && self.manifest[k].toString().length < common.properties[k].minLength) {
+        errors['InvalidPropertyLength' + camelCase(k)] = new Error('`' + k + '` must not be empty');
+      }
+    }
+  };
+
   var hasValidLaunchPath = function () {
     if (self.manifest.launch_path) {
       var pattern = new RegExp(common.properties.launch_path.pattern);
@@ -108,6 +116,7 @@ var Manifest = function () {
     hasValidJSON(content);
     hasMandatoryKeys();
     hasValidPropertyTypes();
+    hasRequiredLength();
     hasValidLaunchPath();
     hasValidIconSizeAndPath();
 
@@ -141,8 +150,6 @@ var RULES = {
          "allowed_nodes": ["*"],
          "child_nodes": {"*": {"expected_type": "object",
                                "child_nodes": {}}}},
-    "default_locale": {"expected_type": "string",
-                       "not_empty": true},
     "installs_allowed_from": {"expected_type": "object",
                               "process": lambda s: s.process_iaf,
                               "not_empty": true},
