@@ -27,3 +27,7 @@ e.g. changing:
       { size: 128, path: '/path/to/128-icon.png' },
       { size: 256, path: '/path/to/256-icon.png' }
     ]
+
+## Tests
+
+    npm test

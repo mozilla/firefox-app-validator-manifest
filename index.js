@@ -165,9 +165,6 @@ var RULES = {
     "installs_allowed_from": {"expected_type": "object",
                               "process": lambda s: s.process_iaf,
                               "not_empty": true},
-    "version": {"expected_type": "string",
-                "not_empty": true,
-                "value_matches": /^[a-zA-Z0-9_,\*\-\.]+$/,
     "screen_size":
         {"expected_type": "object",
          "allowed_once_nodes": ["min_height", "min_width"],
