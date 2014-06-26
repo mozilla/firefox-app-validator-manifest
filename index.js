@@ -143,6 +143,9 @@ module.exports = Warning;
 module.exports = Manifest;
 
 /*
+
+Actual rules here https://github.com/mozilla/app-validator/blob/master/appvalidator/specs/webapps.py
+
 var RULES = {
   "required_nodes_when": {"default_locale": lambda n: "locales" in n},
   "disallowed_nodes": ["widget"],
