@@ -2,6 +2,12 @@
 
 WIP
 
+## Setup
+
+    git clone git@github.com:mozilla/node-firefox-app-validator-manifest.git
+    cd node-firefox-app-validator-manifest
+    npm install
+
 This validates your Firefox app manifest for submission into https://marketplace.firefox.com.
 
 ## Changes from existing validator (notes)
