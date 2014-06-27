@@ -237,8 +237,6 @@ var RULES = {
         },
         "process": lambda s: s.process_permissions
     },
-    "csp": {"expected_type": "string",
-            "not_empty": true},
     "messages": {
         "expected_type": "object",
         "process": lambda s: s.process_messages,
