@@ -134,6 +134,51 @@ describe('validate', function () {
     should.not.exist(results.errors['InvalidPropertyLengthName']);
   });
 
+  it('should have an invalid developer name if empty', function () {
+    common.developer = {'name': ''};
+
+    var results = m.validate(common);
+
+    results.errors['InvalidPropertyLengthDeveloperName'].toString().should.equal('Error: `name` must not be empty');
+  });
+
+  it('should have an invalid developer name if not string', function () {
+    common.developer = {
+      'name': { 'I have': 'no idea what I am doing' }
+    };
+
+    var results = m.validate(common);
+
+    results.errors['InvalidPropertyTypeDeveloperName'].toString().should.equal('Error: `name` must be of type `string`');
+  });
+
+  it('should have an invalid developer property if name is missing', function () {
+    common.developer = {};
+
+    var results = m.validate(common);
+
+    results.errors['MandatoryFieldDeveloperName'].toString().should.equal('Error: Mandatory field name is missing');
+  });
+
+  it('should have an invalid developer url error if url invalid', function () {
+    common.developer = {
+      name: 'Doge',
+      url: 'foo'
+    };
+    var results = m.validate(common);
+    results.errors['InvalidDeveloperUrl'].toString().should.equal('Error: Developer URL must be an absolute HTTP or HTTPS URL');
+  });
+
+  it('should have no error for an unexpected developer property', function () {
+    common.developer = {
+      name: 'doge',
+      yo: 'doge'
+    };
+    (function () {
+      var results = m.validate(common);
+    }).should.not.throw();
+  });
+
   it('should have an invalid version', function () {
     common.version = 'v1.0!!';
 
