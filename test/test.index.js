@@ -83,8 +83,10 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['InvalidIconSizeA'].toString().should.equal('Error: Icon size must be a natural number');
-    results.errors['InvalidIconPathA'].toString().should.equal('Error: Paths to icons must be absolute paths, relative URIs, or data URIs');
+    results.errors['InvalidIconSizeA'].toString().should.equal(
+      'Error: Icon size must be a natural number');
+    results.errors['InvalidIconPathA'].toString().should.equal(
+      'Error: Paths to icons must be absolute paths, relative URIs, or data URIs');
   });
 
   it('should have a valid icon size and valid icon path', function () {
@@ -103,7 +105,8 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['InvalidPropertyLengthDefaultLocale'].toString().should.equal('Error: `default_locale` must not be empty');
+    results.errors['InvalidPropertyLengthDefaultLocale'].toString().should.equal(
+      'Error: `default_locale` must not be empty');
   });
 
   it('should have a valid length if a minLength is provided', function () {
@@ -119,7 +122,8 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['InvalidVersion'].toString().should.equal('Error: `version` is in an invalid format.');
+    results.errors['InvalidVersion'].toString().should.equal(
+      'Error: `version` is in an invalid format.');
   });
 
   it('should have a valid version', function () {
@@ -130,11 +134,37 @@ describe('validate', function () {
     should.not.exist(results.errors['InvalidVersion']);
   });
 
-  it('should have an invalid string type', function () {
-    common.orientation = 'widescreen';
+  it('should have an invalid string type for oneOf', function () {
+    common.role = 'test';
 
     var results = m.validate(common);
 
-    results.errors['InvalidStringTypeOrientation'].toString().should.equal('Error: `orientation` must be one of the following: portrait,landscape');
+    results.errors['InvalidStringTypeRole'].toString().should.equal(
+      'Error: `role` must be one of the following: system,input,homescreen');
+  });
+
+  it('should have a valid string type for oneOf', function () {
+    common.role = 'system';
+
+    var results = m.validate(common);
+
+    should.not.exist(results.errors['InvalidStringTypeRole']);
+  });
+
+  it('should have an invalid string type for anyOf', function () {
+    common.orientation = 'test';
+
+    var results = m.validate(common);
+
+    results.errors['InvalidStringTypeOrientation'].toString().should.equal(
+      'Error: `orientation` must be any of the following: portrait,landscape');
+  });
+
+  it('should have a valid string type for anyOf', function () {
+    common.orientation = 'portrait, landscape';
+
+    var results = m.validate(common);
+
+    should.not.exist(results.errors['InvalidStringTypeOrientation']);
   });
 });

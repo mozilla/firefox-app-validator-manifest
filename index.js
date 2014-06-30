@@ -77,6 +77,13 @@ var Manifest = function () {
       if (common.properties[k].oneOf && common.properties[k].oneOf.indexOf(self.manifest[k]) === -1) {
         errors['InvalidStringType' + camelCase(k)] = new Error('`' + k +
                '` must be one of the following: ' + common.properties[k].oneOf.toString());
+      } else if (common.properties[k].anyOf) {
+        self.manifest[k].split(',').forEach(function (v) {
+          if (common.properties[k].anyOf.indexOf(v.trim()) === -1) {
+            errors['InvalidStringType' + camelCase(k)] = new Error('`' + k +
+               '` must be any of the following: ' + common.properties[k].anyOf.toString());
+          }
+        });
       }
     }
   };
