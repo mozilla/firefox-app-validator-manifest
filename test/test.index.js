@@ -174,7 +174,8 @@ describe('validate', function () {
     var results = m.validate(common);
 
     results.errors['InvalidStringTypeOrientation'].toString().should.equal(
-      'Error: `orientation` must be any of the following: portrait,landscape');
+      'Error: `orientation` must be any of the following: portrait,landscape,' +
+      'portrait-secondary,landscape-secondary,portrait-primary,landscape-primary');
   });
 
   it('should have a valid string type for anyOf', function () {

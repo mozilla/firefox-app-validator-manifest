@@ -70,7 +70,7 @@
         },
         "orientation": {
             "type": "string",
-            "anyOf": ["portrait", "landscape"]
+            "anyOf": ["portrait", "landscape", "portrait-secondary", "landscape-secondary", "portrait-primary", "landscape-primary"]
         },
         "origin": {
 
