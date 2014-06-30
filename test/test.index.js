@@ -129,4 +129,12 @@ describe('validate', function () {
 
     should.not.exist(results.errors['InvalidVersion']);
   });
+
+  it('should have an invalid string type', function () {
+    common.orientation = 'widescreen';
+
+    var results = m.validate(common);
+
+    results.errors['InvalidStringTypeOrientation'].toString().should.equal('Error: `orientation` must be one of the following: portrait,landscape');
+  });
 });

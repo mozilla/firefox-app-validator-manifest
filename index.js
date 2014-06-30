@@ -66,7 +66,17 @@ var Manifest = function () {
   var hasValidPropertyTypes = function () {
     for (var k in self.manifest) {
       if (typeof self.manifest[k] !== common.properties[k].type) {
-        errors['InvalidPropertyType' + camelCase(k)] = new Error('`' + k + '` must be of type `' + common.properties[k].type + '`');
+        errors['InvalidPropertyType' + camelCase(k)] = new Error('`' + k +
+               '` must be of type `' + common.properties[k].type + '`');
+      }
+    }
+  };
+
+  var hasValidStringItem = function () {
+    for (var k in self.manifest) {
+      if (common.properties[k].oneOf && common.properties[k].oneOf.indexOf(self.manifest[k]) === -1) {
+        errors['InvalidStringType' + camelCase(k)] = new Error('`' + k +
+               '` must be one of the following: ' + common.properties[k].oneOf.toString());
       }
     }
   };
@@ -131,6 +141,7 @@ var Manifest = function () {
     hasValidLaunchPath();
     hasValidIconSizeAndPath();
     hasValidVersion();
+    hasValidStringItem();
 
     return {
       errors: errors,
@@ -160,11 +171,6 @@ var RULES = {
                                      lambda s: s.process_dev_url}},
          "required_nodes": ["name"],
          "allowed_once_nodes": ["url", "email"]},
-    "locales":
-        {"expected_type": "object",
-         "allowed_nodes": ["*"],
-         "child_nodes": {"*": {"expected_type": "object",
-                               "child_nodes": {}}}},
     "installs_allowed_from": {"expected_type": "object",
                               "process": lambda s: s.process_iaf,
                               "not_empty": true},
@@ -180,8 +186,6 @@ var RULES = {
                   {"expected_type": "number",
                    "process": lambda s: s.process_screen_size}}},
     "required_features": {"expected_type": "object"},
-    "orientation": {"expected_type": DESCRIPTION_TYPES,
-                    "process": lambda s: s.process_orientation},
     "fullscreen": {"expected_type": "string",
                    "values": ["true", "false"]},
     "appcache_path": {"expected_type": "string",

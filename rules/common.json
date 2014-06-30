@@ -69,10 +69,8 @@
             "minLength": 1
         },
         "orientation": {
-            "type": {
-                "enum": ["portrait", "landscape"]
-            },
-            "required": ["type"]
+            "type": "string",
+            "oneOf": ["portrait", "landscape"]
         },
         "origin": {
 
