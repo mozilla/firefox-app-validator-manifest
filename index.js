@@ -137,6 +137,27 @@ var Manifest = function () {
     }
   };
 
+  var hasValidDefaultLocale = function () {
+    // only relevant if locales property is not empty
+    var error = new Error('`default_locale` must match one of the keys in `locales`');
+
+    if (self.manifest.locales) {
+      if (!self.manifest.default_locale) {
+        errors['InvalidDefaultLocale'] = error;
+      } else {
+        var languages = [];
+
+        for (var i in self.manifest.locales) {
+          languages.push(i);
+        }
+
+        if (languages.indexOf(self.manifest.default_locale) === -1) {
+          errors['InvalidDefaultLocale'] = error;
+        }
+      }
+    }
+  };
+
   this.validate = function (content) {
     errors = {};
     warnings = {};
@@ -149,6 +170,7 @@ var Manifest = function () {
     hasValidIconSizeAndPath();
     hasValidVersion();
     hasValidStringItem();
+    hasValidDefaultLocale();
 
     return {
       errors: errors,

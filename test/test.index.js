@@ -167,4 +167,27 @@ describe('validate', function () {
 
     should.not.exist(results.errors['InvalidStringTypeOrientation']);
   });
+
+  it('should have an invalid default_locale', function () {
+    common.locales = {
+      'es': {}
+    };
+
+    var results = m.validate(common);
+
+    results.errors['InvalidDefaultLocale'].toString().should.equal(
+      'Error: `default_locale` must match one of the keys in `locales`');
+  });
+
+  it('should have a valid default_locale', function () {
+    common.locales = {
+      'es': {}
+    };
+
+    common.default_locale = 'es';
+
+    var results = m.validate(common);
+
+    should.not.exist(results.errors['InvalidDefaultLocale']);
+  });
 });
