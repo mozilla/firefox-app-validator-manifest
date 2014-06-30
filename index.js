@@ -91,7 +91,13 @@ var Manifest = function () {
   var hasRequiredLength = function () {
     for (var k in self.manifest) {
       if (common.properties[k].minLength && self.manifest[k].toString().length < common.properties[k].minLength) {
-        errors['InvalidPropertyLength' + camelCase(k)] = new Error('`' + k + '` must not be empty');
+        errors['InvalidPropertyLength' + camelCase(k)] = new Error(
+          '`' + k + '` must not be empty');
+      }
+
+      if (common.properties[k].maxLength && self.manifest[k].toString().length > common.properties[k].maxLength) {
+        errors['InvalidPropertyLength' + camelCase(k)] = new Error(
+          '`' + k + '` must not exceed length ' + common.properties[k].maxLength);
       }
     }
   };

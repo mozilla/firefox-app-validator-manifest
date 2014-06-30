@@ -117,6 +117,23 @@ describe('validate', function () {
     should.not.exist(results.errors['InvalidPropertyLengthDefaultLocale']);
   });
 
+  it('should have an invalid length if a maxLength is provided', function () {
+    common.name = Array(130).join('x');
+
+    var results = m.validate(common);
+
+    results.errors['InvalidPropertyLengthName'].toString().should.equal(
+      'Error: `name` must not exceed length 128');
+  });
+
+  it('should have a valid length if a maxLength is provided', function () {
+    common.name = 'my app';
+
+    var results = m.validate(common);
+
+    should.not.exist(results.errors['InvalidPropertyLengthName']);
+  });
+
   it('should have an invalid version', function () {
     common.version = 'v1.0!!';
 
