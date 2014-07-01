@@ -120,7 +120,9 @@ var Manifest = function () {
   };
   
   var hasMandatoryKeys = function (subject, schema, parents) {
-    if (!schema.required) { return; }
+    if (!schema.required) {
+      return; 
+    }
 
     var missingKeys = [];
     var keys = schema.required;
@@ -138,7 +140,9 @@ var Manifest = function () {
 
   var hasValidPropertyTypes = function (subject, schema, parents) {
     for (var k in subject) {
-      if (!(k in schema.properties)) { continue; }
+      if (!(k in schema.properties)) {
+        continue; 
+      }
       if (typeof subject[k] !== schema.properties[k].type) {
         errors[glueKey('InvalidPropertyType', parents, k)] = new Error(
             '`' + k + '` must be of type `' + schema.properties[k].type + '`');
@@ -148,7 +152,9 @@ var Manifest = function () {
 
   var hasValidStringItem = function (subject, schema, parents) {
     for (var k in subject) {
-      if (!(k in schema.properties)) { continue; }
+      if (!(k in schema.properties)) { 
+        continue; 
+      }
       if (schema.properties[k].oneOf && schema.properties[k].oneOf.indexOf(subject[k]) === -1) {
         errors[glueKey('InvalidStringType', parents, k)] = new Error('`' + k +
                '` must be one of the following: ' + schema.properties[k].oneOf.toString());
@@ -165,7 +171,9 @@ var Manifest = function () {
 
   var hasRequiredLength = function (subject, schema, parents) {
     for (var k in subject) {
-      if (!(k in schema.properties)) { continue; }
+      if (!(k in schema.properties)) { 
+        continue; 
+      }
       if (schema.properties[k].minLength && subject[k].toString().length < schema.properties[k].minLength) {
         errors[glueKey('InvalidPropertyLength', parents, k)] = new Error(
             '`' + k + '` must not be empty');

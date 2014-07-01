@@ -135,7 +135,9 @@ describe('validate', function () {
   });
 
   it('should have an invalid developer name if empty', function () {
-    common.developer = {'name': ''};
+    common.developer = {
+      'name': ''
+    };
 
     var results = m.validate(common);
 
@@ -144,7 +146,9 @@ describe('validate', function () {
 
   it('should have an invalid developer name if not string', function () {
     common.developer = {
-      'name': { 'I have': 'no idea what I am doing' }
+      'name': {
+        'I have': 'no idea what I am doing' 
+      }
     };
 
     var results = m.validate(common);
