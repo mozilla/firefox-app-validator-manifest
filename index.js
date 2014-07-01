@@ -3,12 +3,22 @@
 var common = require('./rules/common.json');
 var sMarketplace = require('./rules/marketplace.json');
 
+// TODO: These should probably go somewhere better.
+var DEFAULT_WEBAPP_MRKT_URLS = [
+  "https://marketplace.firefox.com",
+  "https://marketplace-dev.allizom.org"
+];
+
 var Warning = function (message) {
   this.name = 'Warning';
   this.message = message || '';
 };
 
 Warning.prototype = Error.prototype;
+
+// Stealing some notions from underscore.js
+var ObjProto = Object.prototype;
+var toString = ObjProto.toString;
 
 var clean = function (word) {
   return word.toString().trim();
@@ -69,7 +79,7 @@ var pathValid = function (path, options) {
     }
     
     // If the URL is absolute but uses an invalid protocol, return False
-    if (['http:', 'https:'].indexOf(parsed.protocol.lower()) === -1) {
+    if (['http:', 'https:'].indexOf(parsed.protocol.toLowerCase()) === -1) {
       return false;
     }
   
@@ -143,9 +153,21 @@ var Manifest = function () {
       if (!(k in schema.properties)) {
         continue; 
       }
-      if (typeof subject[k] !== schema.properties[k].type) {
+
+      var prop = subject[k];
+      var type = schema.properties[k].type;
+
+      var invalid = function () {
         errors[glueKey('InvalidPropertyType', parents, k)] = new Error(
             '`' + k + '` must be of type `' + schema.properties[k].type + '`');
+      };
+    
+      if ('array' === type) {
+        if (toString.call(prop) !== '[object Array]') {
+          return invalid();
+        }
+      } else if (typeof prop !== type) {
+        return invalid();
       }
     }
   };
@@ -255,6 +277,48 @@ var Manifest = function () {
     }
   };
 
+  var hasValidInstallsAllowedFrom = function () {
+    if (!self.manifest.installs_allowed_from) {
+      return;
+    }
+
+    var market_urls = [];
+
+    var invalid = function (msg) {
+      errors['InvalidInstallsAllowedFrom'] = new Error(msg);
+    };
+
+    for (var i=0,item; item=self.manifest.installs_allowed_from[i]; i++) {
+    
+      if ('string' !== typeof item) {
+        return invalid('`installs_allowed_from` must be an array of strings');
+      }
+
+      var valid_path = pathValid(item, {
+        canBeAsterisk: true,
+        canHaveProtocol: true
+      });
+      if (!valid_path) {
+        return invalid('`installs_allowed_from` must be a list of valid absolute URLs or `*`');
+      }
+
+      if ('*' === item || DEFAULT_WEBAPP_MRKT_URLS.indexOf(item) !== -1) {
+        market_urls.push(item);
+      } else {
+        var swap_http = item.replace('http://', 'https://');
+        if (DEFAULT_WEBAPP_MRKT_URLS.indexOf(swap_http) !== -1) {
+          return invalid('`installs_allowed_from` must use https:// when Marketplace URLs are included');
+        }
+      }
+      
+    }
+
+    if (self.manifest.listed && 0 === market_urls.length) {
+      return invalid('`installs_allowed_from` must include a Marketplace URL when listed is true');
+    }
+
+  };
+
   this.validate = function (content) {
     errors = {};
     warnings = {};
@@ -266,6 +330,7 @@ var Manifest = function () {
     hasValidIconSizeAndPath();
     hasValidVersion();
     hasValidDefaultLocale();
+    hasValidInstallsAllowedFrom();
 
     return {
       errors: errors,

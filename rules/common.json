@@ -51,7 +51,7 @@
 
         },
         "installs_allowed_from": {
-
+            "type": "array"
         },
         "launch_path": {
             "type": "string",

@@ -257,4 +257,77 @@ describe('validate', function () {
 
     should.not.exist(results.errors['InvalidDefaultLocale']);
   });
+
+  it("should be valid when installs_allowed_from is an array", function () {
+    common.installs_allowed_from = [
+      'https://apps.lmorchard.com'
+    ];
+    var results = m.validate(common);
+    should.not.exist(results.errors['InvalidPropertyTypeInstallsAllowedFrom']);
+  });
+
+  it("should be valid when installs_allowed_from contains a wildcard", function () {
+    common.installs_allowed_from = [
+      '*'
+    ];
+    var results = m.validate(common);
+    should.not.exist(results.errors['InvalidPropertyTypeInstallsAllowedFrom']);
+  });
+
+  it("should have an invalid type for installs_allowed_from when not an array", function () {
+    common.installs_allowed_from = "THIS IS NOT A LIST";
+    var results = m.validate(common);
+    results.errors['InvalidPropertyTypeInstallsAllowedFrom'].toString().should.equal(
+      'Error: `installs_allowed_from` must be of type `array`');
+  });
+
+  it("should have an invalid error for installs_allowed_from when any array item is not a string", function () {
+    common.installs_allowed_from = [
+      {
+        this: 'is not a string'
+      }
+    ];
+    var results = m.validate(common);
+    results.errors['InvalidInstallsAllowedFrom'].toString().should.equal(
+      'Error: `installs_allowed_from` must be an array of strings');
+  });
+
+  it("should be invalid when installs_allowed_from list contains an invalid URL", function () {
+    common.installs_allowed_from = [
+      'foo/bar'
+    ];
+    var results = m.validate(common);
+    results.errors['InvalidInstallsAllowedFrom'].toString().should.equal(
+      'Error: `installs_allowed_from` must be a list of valid absolute URLs or `*`');
+  });
+
+  it("should be invalid when installs_allowed_from has no marketplace URLs but listed is true", function () {
+    common.listed = true;
+    common.installs_allowed_from = [
+      'https://apps.lmorchard.com'
+    ];
+    var results = m.validate(common);
+    results.errors['InvalidInstallsAllowedFrom'].toString().should.equal(
+      'Error: `installs_allowed_from` must include a Marketplace URL when listed is true');
+  });
+
+  it("should be invalid when installs_allowed_from has no Marketplace URLs, but listed is true", function () {
+    common.listed = true;
+    common.installs_allowed_from = [
+      "https://marketplace.firefox.com",
+      'https://apps.lmorchard.com'
+    ];
+    var results = m.validate(common);
+    should.not.exist(results.errors['InvalidInstallsAllowedFrom']);
+  });
+
+  it("should be invalid when installs_allowed_from contains a Marketplace URL with http:", function () {
+    common.installs_allowed_from = [
+      "http://marketplace.firefox.com",
+    ];
+    var results = m.validate(common);
+    results.errors['InvalidInstallsAllowedFrom'].toString().should.equal(
+      'Error: `installs_allowed_from` must use https:// when Marketplace URLs are included');
+  });
+
 });
