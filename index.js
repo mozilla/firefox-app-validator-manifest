@@ -25,6 +25,63 @@ var camelCase = function (word) {
   return finalWord.join('');
 };
 
+var glueKey = function (prefix, parents, name) {
+  var parts = [];
+  for (var i=0, part; part=parents[i]; i++) {
+    parts.push(camelCase(part));
+  }
+  parts.push(camelCase(name));
+  return prefix + parts.join('');
+};
+
+var parseUrl = function (path) {
+  // TODO: Could replace this with a different implementation to make it
+  // node-agnostic and work in a browser. http://nodejs.org/api/url.html
+  return require('url').parse(path);
+};
+
+var pathValid = function (path, options) {
+  
+  if (path == '*') {
+    return !!options.canBeAsterisk;
+  }
+  
+  if (path.indexOf('data:') !== -1) {
+    return !!options.canBeData;
+  }
+
+  // Nothing good comes from relative protocols.
+  if (path.indexOf('//') === 0) {
+    return false;
+  }
+
+  // Try to parse the URL.
+  try {
+    var parsed = parseUrl(path);
+    
+    // If the URL is relative, return whether the URL can be relative.
+    if (!parsed.protocol || !parsed.host) {
+      if (parsed.pathname && parsed.pathname.indexOf('/') === 0) {
+        return !!options.canBeAbsolute;
+      } else {
+        return !!options.canBeRelative;
+      }
+    }
+    
+    // If the URL is absolute but uses an invalid protocol, return False
+    if (['http:', 'https:'].indexOf(parsed.protocol.lower()) === -1) {
+      return false;
+    }
+  
+    return !!options.canHaveProtocol;
+  
+  } catch (e) {
+    // If there was an error parsing the URL, return False.
+    return false;
+  }
+
+};
+
 var Manifest = function () {
   this.manifest;
   this.appType = 'mkt';
@@ -46,58 +103,92 @@ var Manifest = function () {
     }
   };
 
-  var hasMandatoryKeys = function () {
-    var missingKeys = [];
-    var keys = common.required;
+  var hasValidSchema = function (subject, schema, parents) {
+    hasMandatoryKeys(subject, schema, parents);
+    hasValidPropertyTypes(subject, schema, parents);
+    hasValidStringItem(subject, schema, parents);
+    hasRequiredLength(subject, schema, parents);
 
-    if (self.appType === 'mkt') {
+    // Recursively check sub-properties, if any.
+    if ('properties' in schema) {
+      for (var k in schema.properties) {
+        if ('properties' in schema.properties[k] && k in subject) {
+          hasValidSchema(subject[k], schema.properties[k], parents.concat([k]));
+        }
+      }
+    }
+  };
+  
+  var hasMandatoryKeys = function (subject, schema, parents) {
+    if (!schema.required) {
+      return; 
+    }
+
+    var missingKeys = [];
+    var keys = schema.required;
+
+    if (parents.length === 0 && self.appType === 'mkt') {
       keys = keys.concat(sMarketplace.required);
     }
 
     for (var i = 0; i < keys.length; i ++) {
-      var currKey = camelCase(keys[i]);
-
-      if (!self.manifest || !self.manifest[keys[i]]) {
-        errors['MandatoryField' + currKey] = new Error('Mandatory field ' + keys[i] + ' is missing');
+      if (!subject || !subject[keys[i]]) {
+        errors[glueKey('MandatoryField', parents, keys[i])] = new Error('Mandatory field ' + keys[i] + ' is missing');
       }
     }
   };
 
-  var hasValidPropertyTypes = function () {
-    for (var k in self.manifest) {
-      if (typeof self.manifest[k] !== common.properties[k].type) {
-        errors['InvalidPropertyType' + camelCase(k)] = new Error('`' + k +
-               '` must be of type `' + common.properties[k].type + '`');
+  var hasValidPropertyTypes = function (subject, schema, parents) {
+    for (var k in subject) {
+      if (!(k in schema.properties)) {
+        continue; 
+      }
+      if (typeof subject[k] !== schema.properties[k].type) {
+        errors[glueKey('InvalidPropertyType', parents, k)] = new Error(
+            '`' + k + '` must be of type `' + schema.properties[k].type + '`');
       }
     }
   };
 
-  var hasValidStringItem = function () {
-    for (var k in self.manifest) {
-      if (common.properties[k].oneOf && common.properties[k].oneOf.indexOf(self.manifest[k]) === -1) {
-        errors['InvalidStringType' + camelCase(k)] = new Error('`' + k +
-               '` must be one of the following: ' + common.properties[k].oneOf.toString());
-      } else if (common.properties[k].anyOf) {
-        self.manifest[k].split(',').forEach(function (v) {
-          if (common.properties[k].anyOf.indexOf(v.trim()) === -1) {
-            errors['InvalidStringType' + camelCase(k)] = new Error('`' + k +
-               '` must be any of the following: ' + common.properties[k].anyOf.toString());
+  var hasValidStringItem = function (subject, schema, parents) {
+    for (var k in subject) {
+      if (!(k in schema.properties)) { 
+        continue; 
+      }
+      if (schema.properties[k].oneOf && schema.properties[k].oneOf.indexOf(subject[k]) === -1) {
+        errors[glueKey('InvalidStringType', parents, k)] = new Error('`' + k +
+               '` must be one of the following: ' + schema.properties[k].oneOf.toString());
+      } else if (schema.properties[k].anyOf) {
+        subject[k].split(',').forEach(function (v) {
+          if (schema.properties[k].anyOf.indexOf(v.trim()) === -1) {
+            errors[glueKey('InvalidStringType', parents, k)] = new Error('`' + k +
+               '` must be any of the following: ' + schema.properties[k].anyOf.toString());
           }
         });
       }
     }
   };
 
-  var hasRequiredLength = function () {
-    for (var k in self.manifest) {
-      if (common.properties[k].minLength && self.manifest[k].toString().length < common.properties[k].minLength) {
-        errors['InvalidPropertyLength' + camelCase(k)] = new Error(
-          '`' + k + '` must not be empty');
+  var hasRequiredLength = function (subject, schema, parents) {
+    for (var k in subject) {
+      if (!(k in schema.properties)) { 
+        continue; 
       }
-
-      if (common.properties[k].maxLength && self.manifest[k].toString().length > common.properties[k].maxLength) {
+      if (schema.properties[k].minLength && subject[k].toString().length < schema.properties[k].minLength) {
+        errors[glueKey('InvalidPropertyLength', parents, k)] = new Error(
+            '`' + k + '` must not be empty');
+      }
+      if (schema.properties[k].maxLength && subject[k].toString().length > schema.properties[k].maxLength) {
         errors['InvalidPropertyLength' + camelCase(k)] = new Error(
-          '`' + k + '` must not exceed length ' + common.properties[k].maxLength);
+          '`' + k + '` must not exceed length ' + schema.properties[k].maxLength);
+      }
+    }
+  };
+
+  var hasValidDeveloperUrl = function () {
+    if (self.manifest.developer && self.manifest.developer.url) {
+      if (!pathValid(self.manifest.developer.url, {canHaveProtocol: true})) {
+        errors['InvalidDeveloperUrl'] = new Error('Developer URL must be an absolute HTTP or HTTPS URL');
       }
     }
   };
@@ -169,13 +260,11 @@ var Manifest = function () {
     warnings = {};
 
     hasValidJSON(content);
-    hasMandatoryKeys();
-    hasValidPropertyTypes();
-    hasRequiredLength();
+    hasValidSchema(self.manifest, common, []);
+    hasValidDeveloperUrl();
     hasValidLaunchPath();
     hasValidIconSizeAndPath();
     hasValidVersion();
-    hasValidStringItem();
     hasValidDefaultLocale();
 
     return {
@@ -195,16 +284,6 @@ Actual rules here https://github.com/mozilla/app-validator/blob/master/appvalida
 var RULES = {
   "disallowed_nodes": ["widget"],
   "child_nodes": {
-    "developer":
-        {"expected_type": "object",
-         "child_nodes": {"name": {"expected_type": "string",
-                                  "not_empty": true},
-                         "url": {"expected_type": "string",
-                                 "not_empty": true,
-                                 "process":
-                                     lambda s: s.process_dev_url}},
-         "required_nodes": ["name"],
-         "allowed_once_nodes": ["url", "email"]},
     "installs_allowed_from": {"expected_type": "object",
                               "process": lambda s: s.process_iaf,
                               "not_empty": true},
