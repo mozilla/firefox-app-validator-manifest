@@ -1,5 +1,7 @@
 # Firefox App Validator (Manifest)
 
+[![Build Status](https://secure.travis-ci.org/mozilla/node-firefox-app-validator-manifest.png)](http://travis-ci.org/mozilla/node-firefox-app-validator-manifest)
+
 WIP
 
 ## Setup
