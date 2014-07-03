@@ -147,7 +147,7 @@ describe('validate', function () {
   it('should have an invalid developer name if not string', function () {
     common.developer = {
       'name': {
-        'I have': 'no idea what I am doing' 
+        'I have': 'no idea what I am doing'
       }
     };
 
@@ -290,6 +290,13 @@ describe('validate', function () {
     var results = m.validate(common);
     results.errors['InvalidInstallsAllowedFrom'].toString().should.equal(
       'Error: `installs_allowed_from` must be an array of strings');
+  });
+
+  it("should be invalid when installs_allowed_from is present but empty", function () {
+    common.installs_allowed_from = [];
+    var results = m.validate(common);
+    results.errors['InvalidInstallsAllowedFrom'].toString().should.equal(
+      'Error: `installs_allowed_from` cannot be empty when present');
   });
 
   it("should be invalid when installs_allowed_from list contains an invalid URL", function () {

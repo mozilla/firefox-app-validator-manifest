@@ -288,6 +288,10 @@ var Manifest = function () {
       errors['InvalidInstallsAllowedFrom'] = new Error(msg);
     };
 
+    if (0 === self.manifest.installs_allowed_from.length) {
+      return invalid('`installs_allowed_from` cannot be empty when present');
+    }
+
     for (var i=0,item; item=self.manifest.installs_allowed_from[i]; i++) {
     
       if ('string' !== typeof item) {
@@ -349,9 +353,6 @@ Actual rules here https://github.com/mozilla/app-validator/blob/master/appvalida
 var RULES = {
   "disallowed_nodes": ["widget"],
   "child_nodes": {
-    "installs_allowed_from": {"expected_type": "object",
-                              "process": lambda s: s.process_iaf,
-                              "not_empty": true},
     "screen_size":
         {"expected_type": "object",
          "allowed_once_nodes": ["min_height", "min_width"],
