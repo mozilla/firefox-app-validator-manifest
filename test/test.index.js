@@ -337,4 +337,52 @@ describe('validate', function () {
       'Error: `installs_allowed_from` must use https:// when Marketplace URLs are included');
   });
 
+  it("should be invalid when screen_size is not an object", function () {
+    common.screen_size = 'NOT AN OBJECT';
+    var results = m.validate(common);
+    results.errors['InvalidPropertyTypeScreenSize'].toString().should.equal(
+      "Error: `screen_size` must be of type `object`");
+  });
+
+  it("should be invalid when screen_size is an empty object", function () {
+    common.screen_size = {};
+    var results = m.validate(common);
+    results.errors['InvalidEmptyScreenSize'].toString().should.equal(
+      'Error: `screen_size` should have at least min_height or min_width');
+  });
+
+  it("should be valid when screen_size.min_width is a number", function () {
+    common.screen_size = {
+      min_width: '640'
+    };
+    var results = m.validate(common);
+    should.not.exist(results.errors['InvalidNumberScreenSizeMinWidth']);
+  });
+
+  it("should be invalid when screen_size.min_width is not a number", function () {
+    common.screen_size = {
+      min_width: 'NOT A NUMBER'
+    };
+    var results = m.validate(common);
+    results.errors['InvalidNumberScreenSizeMinWidth'].toString().should.equal(
+      "Error: `min_width` must be a number");
+  });
+
+  it("should be valid when screen_size.min_height is a number", function () {
+    common.screen_size = {
+      min_height: '480'
+    };
+    var results = m.validate(common);
+    should.not.exist(results.errors['InvalidNumberScreenSizeMinHeight']);
+  });
+
+  it("should be invalid when screen_size.min_height is not a number", function () {
+    common.screen_size = {
+      min_height: 'NOT A NUMBER'
+    };
+    var results = m.validate(common);
+    results.errors['InvalidNumberScreenSizeMinHeight'].toString().should.equal(
+      "Error: `min_height` must be a number");
+  });
+
 });

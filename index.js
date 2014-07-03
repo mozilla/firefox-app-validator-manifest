@@ -327,6 +327,27 @@ var Manifest = function () {
 
   };
 
+  var hasValidScreenSize = function () {
+    var screen_size = self.manifest.screen_size;
+    if (!screen_size || 'object' !== typeof screen_size) {
+      return;
+    }
+    if (!('min_width' in screen_size || 'min_height' in screen_size)) {
+      errors['InvalidEmptyScreenSize'] = new Error(
+        '`screen_size` should have at least min_height or min_width');
+      return;
+    }
+    var validSize = function (key) {
+      var val = screen_size[key];
+      if (val && !(/^\d+$/.test(val))) {
+        errors['InvalidNumberScreenSize' + camelCase(key)] = new Error(
+          '`'+ key +'` must be a number');
+      }
+    };
+    validSize('min_width');
+    validSize('min_height');
+  };
+
   this.validate = function (content) {
     errors = {};
     warnings = {};
@@ -339,6 +360,7 @@ var Manifest = function () {
     hasValidVersion();
     hasValidDefaultLocale();
     hasValidInstallsAllowedFrom();
+    hasValidScreenSize();
 
     return {
       errors: errors,

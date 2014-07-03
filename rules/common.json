@@ -91,7 +91,7 @@
             "oneOf": ["system", "input", "homescreen"]
         },
         "screen_size": {
-
+            "type": "object"
         },
         "type": {
 
