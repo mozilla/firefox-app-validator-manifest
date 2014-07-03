@@ -284,18 +284,19 @@ var Manifest = function () {
 
     var market_urls = [];
 
-    var invalid = function (msg) {
-      errors['InvalidInstallsAllowedFrom'] = new Error(msg);
+    var invalid = function (subkey, msg) {
+      errors['Invalid' + subkey + 'InstallsAllowedFrom'] = new Error(msg);
     };
 
     if (0 === self.manifest.installs_allowed_from.length) {
-      return invalid('`installs_allowed_from` cannot be empty when present');
+      return invalid('Empty', '`installs_allowed_from` cannot be empty when present');
     }
 
     for (var i=0,item; item=self.manifest.installs_allowed_from[i]; i++) {
     
       if ('string' !== typeof item) {
-        return invalid('`installs_allowed_from` must be an array of strings');
+        return invalid('ArrayOfStrings',
+            '`installs_allowed_from` must be an array of strings');
       }
 
       var valid_path = pathValid(item, {
@@ -303,7 +304,8 @@ var Manifest = function () {
         canHaveProtocol: true
       });
       if (!valid_path) {
-        return invalid('`installs_allowed_from` must be a list of valid absolute URLs or `*`');
+        return invalid('Url',
+            '`installs_allowed_from` must be a list of valid absolute URLs or `*`');
       }
 
       if ('*' === item || DEFAULT_WEBAPP_MRKT_URLS.indexOf(item) !== -1) {
@@ -311,14 +313,16 @@ var Manifest = function () {
       } else {
         var swap_http = item.replace('http://', 'https://');
         if (DEFAULT_WEBAPP_MRKT_URLS.indexOf(swap_http) !== -1) {
-          return invalid('`installs_allowed_from` must use https:// when Marketplace URLs are included');
+          return invalid('SecureMarketplaceUrl',
+              '`installs_allowed_from` must use https:// when Marketplace URLs are included');
         }
       }
       
     }
 
     if (self.manifest.listed && 0 === market_urls.length) {
-      return invalid('`installs_allowed_from` must include a Marketplace URL when listed is true');
+      return invalid('ListedRequiresMarketplaceUrl',
+          '`installs_allowed_from` must include a Marketplace URL when listed is true');
     }
 
   };
