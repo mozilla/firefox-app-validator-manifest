@@ -309,13 +309,12 @@ describe('validate', function () {
   });
 
   it("should be invalid when installs_allowed_from has no marketplace URLs but listed is true", function () {
-    common.listed = true;
     common.installs_allowed_from = [
       'https://apps.lmorchard.com'
     ];
-    var results = m.validate(common);
+    var results = m.validate(common, {listed: true});
     results.errors['InvalidListedRequiresMarketplaceUrlInstallsAllowedFrom'].toString().should.equal(
-      'Error: `installs_allowed_from` must include a Marketplace URL when listed is true');
+      'Error: `installs_allowed_from` must include a Marketplace URL when app is listed');
   });
 
   it("should be invalid when installs_allowed_from has no Marketplace URLs, but listed is true", function () {
@@ -383,6 +382,42 @@ describe('validate', function () {
     var results = m.validate(common);
     results.errors['InvalidNumberScreenSizeMinHeight'].toString().should.equal(
       "Error: `min_height` must be a number");
+  });
+
+  it('should be valid when type is one of the expected values', function () {
+    ['web', 'privileged', 'certified'].forEach(function (type) {
+      common.type = type;
+      var results = m.validate(common);
+      should.not.exist(results.errors['InvalidStringTypeType']);
+    });
+  });
+
+  it('should be invalid when type is not one of web, privileged, or certified', function () {
+    common.type = 'bonafide';
+    var results = m.validate(common);
+    results.errors['InvalidStringTypeType'].toString().should.equal(
+      'Error: `type` must be one of the following: web,privileged,certified');
+  });
+
+  it("should be invalid when type is not a string", function () {
+    common.type = ['NOT', 'A', 'STRING'];
+    var results = m.validate(common);
+    results.errors['InvalidPropertyTypeType'].toString().should.equal(
+      'Error: `type` must be of type `string`');
+  });
+
+  it('should be invalid when type is certified but app is listed', function () {
+    common.type = 'certified';
+    var results = m.validate(common, {listed: true});
+    results.errors['InvalidTypeCertifiedListed'].toString().should.equal(
+      'Error: `certified` apps cannot be listed');
+  });
+
+  it('should be invalid when type is not web but app is not packaged', function () {
+    common.type = 'privileged';
+    var results = m.validate(common, {packaged: false});
+    results.errors['InvalidTypeWebPrivileged'].toString().should.equal(
+      'Error: unpackaged web apps may not have a type of `certified` or `privileged`');
   });
 
 });

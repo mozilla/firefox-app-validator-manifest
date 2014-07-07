@@ -94,7 +94,8 @@
             "type": "object"
         },
         "type": {
-
+            "type": "string",
+            "oneOf": ["web", "privileged", "certified"]
         },
         "version": {
             "type": "string",

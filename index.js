@@ -320,9 +320,9 @@ var Manifest = function () {
       
     }
 
-    if (self.manifest.listed && 0 === market_urls.length) {
+    if (self.options.listed && 0 === market_urls.length) {
       return invalid('ListedRequiresMarketplaceUrl',
-          '`installs_allowed_from` must include a Marketplace URL when listed is true');
+          '`installs_allowed_from` must include a Marketplace URL when app is listed');
     }
 
   };
@@ -348,9 +348,32 @@ var Manifest = function () {
     validSize('min_height');
   };
 
-  this.validate = function (content) {
+  var hasValidType = function () {
+    var type = self.manifest.type;
+    if (!type) {
+      return;
+    }
+
+    if (self.options.listed && 'certified' === self.manifest.type) {
+      errors['InvalidTypeCertifiedListed'] = new Error(
+        '`certified` apps cannot be listed');
+    }
+
+    if (!self.options.packaged && 'web' !== self.manifest.type) {
+      errors['InvalidTypeWebPrivileged'] = new Error(
+        'unpackaged web apps may not have a type of `certified` or `privileged`');
+    }
+
+  };
+
+  this.validate = function (content, options) {
     errors = {};
     warnings = {};
+
+    this.options = options || {
+      listed: false,
+      packaged: false
+    };
 
     hasValidJSON(content);
     hasValidSchema(self.manifest, common, []);
@@ -361,6 +384,7 @@ var Manifest = function () {
     hasValidDefaultLocale();
     hasValidInstallsAllowedFrom();
     hasValidScreenSize();
+    hasValidType();
 
     return {
       errors: errors,
