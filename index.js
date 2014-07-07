@@ -507,14 +507,6 @@ var RULES = {
                          /\.[a-z]{2,5}$/]
         "process": lambda s: s.process_origin,
     },
-    "chrome": {
-        "expected_type": "object",
-        "unknown_node_level": "error",
-        "allowed_nodes": ["navigation"],
-        "child_nodes": {
-            "navigation": {"expected_type": "boolean"}
-        }
-    }
   }
 };
 */
