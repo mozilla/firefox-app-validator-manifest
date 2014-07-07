@@ -446,17 +446,6 @@ Actual rules here https://github.com/mozilla/app-validator/blob/master/appvalida
 var RULES = {
   "disallowed_nodes": ["widget"],
   "child_nodes": {
-    "screen_size":
-        {"expected_type": "object",
-         "allowed_once_nodes": ["min_height", "min_width"],
-         "not_empty": true,
-         "child_nodes":
-             {"min_height":
-                  {"expected_type": "number",
-                   "process": lambda s: s.process_screen_size},
-              "min_width":
-                  {"expected_type": "number",
-                   "process": lambda s: s.process_screen_size}}},
     "required_features": {"expected_type": "object"},
     "activities": {
         "expected_type": "object",
