@@ -415,8 +415,6 @@ var RULES = {
                   {"expected_type": "number",
                    "process": lambda s: s.process_screen_size}}},
     "required_features": {"expected_type": "object"},
-    "fullscreen": {"expected_type": "string",
-                   "values": ["true", "false"]},
     "appcache_path": {"expected_type": "string",
                       "process": lambda s: s.process_appcache_path},
     "activities": {

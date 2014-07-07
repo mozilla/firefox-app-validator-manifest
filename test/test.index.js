@@ -420,4 +420,26 @@ describe('validate', function () {
       'Error: unpackaged web apps may not have a type of `certified` or `privileged`');
   });
 
+  it('should be valid when fullscreen is "true" or "false"', function () {
+    ['true', 'false'].forEach(function (val) {
+      common.fullscreen = val;
+      var results = m.validate(common);
+      should.not.exist(results.errors['InvalidStringTypeFullscreen']);
+    });
+  });
+
+  it('should be invalid when fullscreen is not "true" or "false"', function () {
+    common.fullscreen = 'maybe';
+    var results = m.validate(common);
+    results.errors['InvalidStringTypeFullscreen'].toString().should.equal(
+      'Error: `fullscreen` must be one of the following: true,false');
+  });
+
+  it('should be invalid when fullscreen is not a string', function () {
+    common.fullscreen = ['NOT', 'A', 'STRING'];
+    var results = m.validate(common);
+    results.errors['InvalidPropertyTypeFullscreen'].toString().should.equal(
+      'Error: `fullscreen` must be of type `string`');
+  });
+
 });

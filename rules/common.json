@@ -42,7 +42,8 @@
             "minLength": 1
         },
         "fullscreen": {
-
+            "type": "string",
+            "oneOf": ["true", "false"]
         },
         "icons": {
             "type": "object"
