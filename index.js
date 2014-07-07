@@ -51,11 +51,11 @@ var parseUrl = function (path) {
 };
 
 var pathValid = function (path, options) {
-  
+
   if (path == '*') {
     return !!options.canBeAsterisk;
   }
-  
+
   if (path.indexOf('data:') !== -1) {
     return !!options.canBeData;
   }
@@ -68,7 +68,7 @@ var pathValid = function (path, options) {
   // Try to parse the URL.
   try {
     var parsed = parseUrl(path);
-    
+
     // If the URL is relative, return whether the URL can be relative.
     if (!parsed.protocol || !parsed.host) {
       if (parsed.pathname && parsed.pathname.indexOf('/') === 0) {
@@ -77,14 +77,14 @@ var pathValid = function (path, options) {
         return !!options.canBeRelative;
       }
     }
-    
+
     // If the URL is absolute but uses an invalid protocol, return False
     if (['http:', 'https:'].indexOf(parsed.protocol.toLowerCase()) === -1) {
       return false;
     }
-  
+
     return !!options.canHaveProtocol;
-  
+
   } catch (e) {
     // If there was an error parsing the URL, return False.
     return false;
@@ -129,10 +129,10 @@ var Manifest = function () {
       }
     }
   };
-  
+
   var hasMandatoryKeys = function (subject, schema, parents) {
     if (!schema.required) {
-      return; 
+      return;
     }
 
     var missingKeys = [];
@@ -161,7 +161,7 @@ var Manifest = function () {
   var hasValidPropertyTypes = function (subject, schema, parents) {
     for (var k in subject) {
       if (!(k in schema.properties)) {
-        continue; 
+        continue;
       }
 
       var prop = subject[k];
@@ -171,7 +171,7 @@ var Manifest = function () {
         errors[glueKey('InvalidPropertyType', parents, k)] = new Error(
             '`' + k + '` must be of type `' + schema.properties[k].type + '`');
       };
-    
+
       if ('array' === type) {
         if (toString.call(prop) !== '[object Array]') {
           return invalid();
@@ -188,8 +188,8 @@ var Manifest = function () {
 
   var hasValidStringItem = function (subject, schema, parents) {
     for (var k in subject) {
-      if (!(k in schema.properties)) { 
-        continue; 
+      if (!(k in schema.properties)) {
+        continue;
       }
       if (schema.properties[k].oneOf && schema.properties[k].oneOf.indexOf(subject[k]) === -1) {
         errors[glueKey('InvalidStringType', parents, k)] = new Error('`' + k +
@@ -207,8 +207,8 @@ var Manifest = function () {
 
   var hasRequiredLength = function (subject, schema, parents) {
     for (var k in subject) {
-      if (!(k in schema.properties)) { 
-        continue; 
+      if (!(k in schema.properties)) {
+        continue;
       }
       if (schema.properties[k].minLength && subject[k].toString().length < schema.properties[k].minLength) {
         errors[glueKey('InvalidPropertyLength', parents, k)] = new Error(
@@ -296,7 +296,7 @@ var Manifest = function () {
       return;
     }
 
-    var market_urls = [];
+    var marketURLs = [];
 
     var invalid = function (subkey, msg) {
       errors['Invalid' + subkey + 'InstallsAllowedFrom'] = new Error(msg);
@@ -307,23 +307,23 @@ var Manifest = function () {
     }
 
     for (var i=0,item; item=self.manifest.installs_allowed_from[i]; i++) {
-    
+
       if ('string' !== typeof item) {
         return invalid('ArrayOfStrings',
             '`installs_allowed_from` must be an array of strings');
       }
 
-      var valid_path = pathValid(item, {
+      var validPath = pathValid(item, {
         canBeAsterisk: true,
         canHaveProtocol: true
       });
-      if (!valid_path) {
+      if (!validPath) {
         return invalid('Url',
             '`installs_allowed_from` must be a list of valid absolute URLs or `*`');
       }
 
       if ('*' === item || DEFAULT_WEBAPP_MRKT_URLS.indexOf(item) !== -1) {
-        market_urls.push(item);
+        marketURLs.push(item);
       } else {
         var swap_http = item.replace('http://', 'https://');
         if (DEFAULT_WEBAPP_MRKT_URLS.indexOf(swap_http) !== -1) {
@@ -331,10 +331,10 @@ var Manifest = function () {
               '`installs_allowed_from` must use https:// when Marketplace URLs are included');
         }
       }
-      
+
     }
 
-    if (self.options.listed && 0 === market_urls.length) {
+    if (self.options.listed && 0 === marketURLs.length) {
       return invalid('ListedRequiresMarketplaceUrl',
           '`installs_allowed_from` must include a Marketplace URL when app is listed');
     }
@@ -342,22 +342,26 @@ var Manifest = function () {
   };
 
   var hasValidScreenSize = function () {
-    var screen_size = self.manifest.screen_size;
-    if (!screen_size || 'object' !== typeof screen_size) {
+    var screenSize = self.manifest.screen_size;
+
+    if (!screenSize || 'object' !== typeof screenSize) {
       return;
     }
-    if (!('min_width' in screen_size || 'min_height' in screen_size)) {
+
+    if (!('min_width' in screenSize || 'min_height' in screenSize)) {
       errors['InvalidEmptyScreenSize'] = new Error(
         '`screen_size` should have at least min_height or min_width');
       return;
     }
+
     var validSize = function (key) {
-      var val = screen_size[key];
+      var val = screenSize[key];
       if (val && !(/^\d+$/.test(val))) {
         errors['InvalidNumberScreenSize' + camelCase(key)] = new Error(
           '`'+ key +'` must be a number');
       }
     };
+
     validSize('min_width');
     validSize('min_height');
   };
