@@ -8,7 +8,8 @@
 
         },
         "appcache_path": {
-
+            "type": "string",
+            "minLength": 1
         },
         "chrome": {
             "type": "object",

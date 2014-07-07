@@ -479,4 +479,29 @@ describe('validate', function () {
       'Error: Unexpected property `shiny` found in `chrome`');
   });
 
+  it('should be an invalid appcache_path if it is a packaged app', function () {
+    common.appcache_path = 'http://kittens.com';
+
+    var results = m.validate(common, {packaged: true});
+    results.errors['InvalidAppCachePathType'].toString().should.equal(
+      "Error: packaged apps cannot use Appcache. The `appcache_path` field " +
+      "should not be provided in a packaged app's manifest")
+  });
+
+  it('should be an invalid appcache_path if it is not an absolute URL', function () {
+    common.appcache_path = '/some/relative/url';
+
+    var results = m.validate(common);
+    results.errors['InvalidAppCachePathURL'].toString().should.equal(
+      'Error: The `appcache_path` must be a full, absolute URL to the application ' +
+      'cache manifest');
+  });
+
+  it('should be a valid appcache_path', function () {
+    common.appcache_path = 'http://kittens.com';
+
+    var results = m.validate(common);
+    should.not.exist(results.errors['InvalidAppCachePathURL']);
+    should.not.exist(results.errors['InvalidAppCachePathType']);
+  });
 });

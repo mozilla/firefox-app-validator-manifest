@@ -191,6 +191,7 @@ var Manifest = function () {
       if (!(k in schema.properties)) {
         continue;
       }
+
       if (schema.properties[k].oneOf && schema.properties[k].oneOf.indexOf(subject[k]) === -1) {
         errors[glueKey('InvalidStringType', parents, k)] = new Error('`' + k +
                '` must be one of the following: ' + schema.properties[k].oneOf.toString());
@@ -210,10 +211,12 @@ var Manifest = function () {
       if (!(k in schema.properties)) {
         continue;
       }
+
       if (schema.properties[k].minLength && subject[k].toString().length < schema.properties[k].minLength) {
         errors[glueKey('InvalidPropertyLength', parents, k)] = new Error(
             '`' + k + '` must not be empty');
       }
+
       if (schema.properties[k].maxLength && subject[k].toString().length > schema.properties[k].maxLength) {
         errors['InvalidPropertyLength' + camelCase(k)] = new Error(
           '`' + k + '` must not exceed length ' + schema.properties[k].maxLength);
@@ -356,6 +359,7 @@ var Manifest = function () {
 
     var validSize = function (key) {
       var val = screenSize[key];
+
       if (val && !(/^\d+$/.test(val))) {
         errors['InvalidNumberScreenSize' + camelCase(key)] = new Error(
           '`'+ key +'` must be a number');
@@ -368,6 +372,7 @@ var Manifest = function () {
 
   var hasValidType = function () {
     var type = self.manifest.type;
+
     if (!type) {
       return;
     }
@@ -381,7 +386,26 @@ var Manifest = function () {
       errors['InvalidTypeWebPrivileged'] = new Error(
         'unpackaged web apps may not have a type of `certified` or `privileged`');
     }
+  };
 
+  var hasValidAppCachePath = function () {
+    var appcachePath = self.manifest.appcache_path;
+
+    if (appcachePath) {
+      if (self.options.packaged) {
+        if (appcachePath) {
+          errors['InvalidAppCachePathType'] = new Error(
+            "packaged apps cannot use Appcache. The `appcache_path` field should " +
+            "not be provided in a packaged app's manifest");
+        }
+      }
+
+      if (!pathValid(appcachePath, {canHaveProtocol: true})) {
+        errors['InvalidAppCachePathURL'] = new Error(
+          'The `appcache_path` must be a full, absolute URL to the application ' +
+          'cache manifest');
+      }
+    }
   };
 
   this.validate = function (content, options) {
@@ -403,6 +427,7 @@ var Manifest = function () {
     hasValidInstallsAllowedFrom();
     hasValidScreenSize();
     hasValidType();
+    hasValidAppCachePath();
 
     return {
       errors: errors,
@@ -433,8 +458,6 @@ var RULES = {
                   {"expected_type": "number",
                    "process": lambda s: s.process_screen_size}}},
     "required_features": {"expected_type": "object"},
-    "appcache_path": {"expected_type": "string",
-                      "process": lambda s: s.process_appcache_path},
     "activities": {
         "expected_type": "object",
         "allowed_nodes": ["*"],
