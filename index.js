@@ -419,8 +419,6 @@ var RULES = {
                    "values": ["true", "false"]},
     "appcache_path": {"expected_type": "string",
                       "process": lambda s: s.process_appcache_path},
-    "type": {"expected_type": "string",
-             "process": lambda s: s.process_type},
     "activities": {
         "expected_type": "object",
         "allowed_nodes": ["*"],
