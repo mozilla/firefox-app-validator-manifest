@@ -11,7 +11,12 @@
 
         },
         "chrome": {
-
+            "type": "object",
+            "properties": {
+                "navigation": {
+                    "type": "boolean"
+                }
+            }
         },
         "csp": {
             "type": "string",

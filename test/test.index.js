@@ -442,4 +442,41 @@ describe('validate', function () {
       'Error: `fullscreen` must be of type `string`');
   });
 
+  it('should be valid when chrome is an object with a boolean navigation property', function () {
+    [true, false].forEach(function (val) {
+      common.chrome = {
+        navigation: val
+      };
+      var results = m.validate(common);
+      should.not.exist(results.errors['InvalidPropertyTypeChrome']);
+      should.not.exist(results.errors['InvalidChromeProperties']);
+      should.not.exist(results.errors['UnexpectedPropertyChrome']);
+    });
+  });
+
+  it('should be invalid when chrome is not an object', function () {
+    common.chrome = ['NOT', 'AN', 'OBJECT'];
+    var results = m.validate(common);
+    results.errors['InvalidPropertyTypeChrome'].toString().should.equal(
+      'Error: `chrome` must be of type `object`');
+  });
+
+  it('should be invalid when chrome.navigation is not boolean', function () {
+    common.chrome = {
+      navigation: 'woofwoof'
+    };
+    var results = m.validate(common);
+    results.errors['InvalidPropertyTypeChromeNavigation'].toString().should.equal(
+      'Error: `navigation` must be of type `boolean`');
+  });
+
+  it('should be invalid when chrome is an object with unexpected properties', function () {
+    common.chrome = {
+      shiny: true
+    };
+    var results = m.validate(common);
+    results.errors['UnexpectedPropertyChrome'].toString().should.equal(
+      'Error: Unexpected property `shiny` found in `chrome`');
+  });
+
 });

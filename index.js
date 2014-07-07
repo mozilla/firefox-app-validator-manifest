@@ -115,6 +115,7 @@ var Manifest = function () {
 
   var hasValidSchema = function (subject, schema, parents) {
     hasMandatoryKeys(subject, schema, parents);
+    hasNoUnexpectedKeys(subject, schema, parents);
     hasValidPropertyTypes(subject, schema, parents);
     hasValidStringItem(subject, schema, parents);
     hasRequiredLength(subject, schema, parents);
@@ -148,6 +149,15 @@ var Manifest = function () {
     }
   };
 
+  var hasNoUnexpectedKeys = function (subject, schema, parents) {
+    for (var k in subject) {
+      if (!(k in schema.properties)) {
+        errors[glueKey('UnexpectedProperty', parents, '')] = new Error(
+            'Unexpected property `' + k + '` found in `' + parents.join('.') + '`');
+      }
+    }
+  };
+
   var hasValidPropertyTypes = function (subject, schema, parents) {
     for (var k in subject) {
       if (!(k in schema.properties)) {
@@ -164,6 +174,10 @@ var Manifest = function () {
     
       if ('array' === type) {
         if (toString.call(prop) !== '[object Array]') {
+          return invalid();
+        }
+      } else if ('object' === type) {
+        if (toString.call(prop) !== '[object Object]') {
           return invalid();
         }
       } else if (typeof prop !== type) {
