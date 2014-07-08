@@ -1,8 +1,10 @@
-# Firefox App Validator (Manifest)
+# Firefox App Validator: Manifest
 
 [![Build Status](https://secure.travis-ci.org/mozilla/node-firefox-app-validator-manifest.png)](http://travis-ci.org/mozilla/node-firefox-app-validator-manifest)
 
-WIP
+## What it is
+
+This is the Firefox App manifest validator for verifying that your `manifest.webapp` file has the correct information before submitting to the [Firefox Marketplace](https://marketplace.firefox.com).
 
 ## Setup
 
@@ -10,7 +12,22 @@ WIP
     cd node-firefox-app-validator-manifest
     npm install
 
-This validates your Firefox app manifest for submission into https://marketplace.firefox.com.
+## Checking your manifest: an example
+
+    var fs = require('fs');
+    var Manifest = require('firefox-app-validator-manifest');
+    var ff = new Manifest();
+
+    fs.readFile('manifest.webapp', 'utf8', function (err, data) {
+      if (!err) {
+        var results = ff.validate(data, options);
+
+        // If there are any errors or warnings, this will have them listed.
+        console.log(results);
+      }
+    });
+
+`options` contains the app resource keys of: `listed` and `packaged`. Defaults to `false` for both if not included.
 
 ## Changes from existing validator (notes)
 
@@ -21,3 +38,7 @@ This validates your Firefox app manifest for submission into https://marketplace
 ## Tests
 
     npm test
+
+## License
+
+Mozilla Public License Version 2.0
