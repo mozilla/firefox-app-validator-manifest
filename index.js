@@ -40,7 +40,9 @@ var glueKey = function (prefix, parents, name) {
   for (var i=0, part; part=parents[i]; i++) {
     parts.push(camelCase(part));
   }
-  parts.push(camelCase(name));
+  if (name) {
+    parts.push(camelCase(name));
+  }
   return prefix + parts.join('');
 };
 
@@ -117,6 +119,7 @@ var Manifest = function () {
     hasMandatoryKeys(subject, schema, parents);
     hasNoUnexpectedKeys(subject, schema, parents);
     hasValidPropertyTypes(subject, schema, parents);
+    hasValidItemTypes(subject, schema, parents);
     hasValidStringItem(subject, schema, parents);
     hasRequiredLength(subject, schema, parents);
 
@@ -144,7 +147,8 @@ var Manifest = function () {
 
     for (var i = 0; i < keys.length; i ++) {
       if (!subject || !subject[keys[i]]) {
-        errors[glueKey('MandatoryField', parents, keys[i])] = new Error('Mandatory field ' + keys[i] + ' is missing');
+        errors[glueKey('MandatoryField', parents, keys[i])] = new Error(
+            'Mandatory field ' + keys[i] + ' is missing');
       }
     }
   };
@@ -158,31 +162,71 @@ var Manifest = function () {
     }
   };
 
+  var isValidObjectType = function (prop, type) {
+    if ('array' === type) {
+      if (toString.call(prop) !== '[object Array]') {
+        return false;
+      }
+    } else if ('object' === type) {
+      if (toString.call(prop) !== '[object Object]') {
+        return false;
+      }
+    } else if (typeof prop !== type) {
+      return false;
+    }
+    return true;
+  };
+
   var hasValidPropertyTypes = function (subject, schema, parents) {
     for (var k in subject) {
       if (!(k in schema.properties)) {
         continue;
       }
-
-      var prop = subject[k];
       var type = schema.properties[k].type;
-
-      var invalid = function () {
+      if (!isValidObjectType(subject[k], type)) {
         errors[glueKey('InvalidPropertyType', parents, k)] = new Error(
-            '`' + k + '` must be of type `' + schema.properties[k].type + '`');
-      };
-
-      if ('array' === type) {
-        if (toString.call(prop) !== '[object Array]') {
-          return invalid();
-        }
-      } else if ('object' === type) {
-        if (toString.call(prop) !== '[object Object]') {
-          return invalid();
-        }
-      } else if (typeof prop !== type) {
-        return invalid();
+            '`' + k + '` must be of type `' + type + '`');
       }
+    }
+  };
+
+  var hasValidItemTypes = function (subject, schema, parents) {
+    for (var k in subject) {
+      if (!(k in schema.properties)) {
+        continue;
+      }
+
+      // Only validate if this is declared an an array in the schema, and the
+      // schema specifies items, and the subject itself is in fact an array.
+      var propertySchema = schema.properties[k];
+      var arraySubject = subject[k];
+      if ('array' !== propertySchema.type || !('items' in propertySchema) ||
+          '[object Array]' !== toString.call(arraySubject)) {
+        continue;
+      }
+
+      var itemSchema = propertySchema.items;
+
+      // TODO: Implement [object Array] form of items schema
+      if ('[object Object]' === toString.call(itemSchema)) {
+        var type = itemSchema.type;
+
+        // Validate each of the items in the subject array
+        for (var i=0; i<arraySubject.length; i++) {
+          var itemSubject = arraySubject[i];
+
+          if (!isValidObjectType(itemSubject, type)) {
+            errors[glueKey('InvalidItemType', parents, k)] = new Error(
+                'items of array `' + k + '` must be of type `' + type + '`');
+          }
+
+          if ('properties' in itemSchema) {
+            hasValidSchema(itemSubject, itemSchema, parents.concat([k]));
+          }
+
+        }
+      }
+
     }
   };
 
