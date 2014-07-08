@@ -6,7 +6,7 @@ var m = new Manifest();
 var common;
 
 describe('validate', function () {
-  afterEach(function () {
+  beforeEach(function () {
     common = {
       description: 'test app',
       name: 'app'
@@ -20,6 +20,7 @@ describe('validate', function () {
       err.toString().should.equal('Error: Manifest is not in a valid JSON format or has invalid properties');
     }
   });
+
 
   it('should return an invalid manifest with missing mandatory keys for the marketplace', function () {
     var results = m.validate({});
@@ -57,7 +58,8 @@ describe('validate', function () {
     common.launch_path = [];
 
     var results = m.validate(common);
-    results.errors['InvalidPropertyTypeLaunchPath'].toString().should.equal("Error: `launch_path` must be of type `string`");
+    results.errors['InvalidPropertyTypeLaunchPath'].toString().should.equal(
+      "Error: `launch_path` must be of type `string`");
   });
 
   it('should return an invalid launch path', function () {
@@ -440,6 +442,56 @@ describe('validate', function () {
     var results = m.validate(common);
     results.errors['InvalidPropertyTypeFullscreen'].toString().should.equal(
       'Error: `fullscreen` must be of type `string`');
+  });
+
+  it('should be valid when redirects is an array of objects with expected properties', function () {
+    common.redirects = [
+      {"to": "asdf", "from": "qwer"},
+      {"to": "asdf", "from": "qwer"},
+    ];
+    var results = m.validate(common);
+    should.not.exist(results.errors['InvalidPropertyTypeRedirects']);
+    should.not.exist(results.errors['InvalidItemTypeRedirects']);
+    should.not.exist(results.errors['UnexpectedPropertyRedirects']);
+  });
+
+  it('should be invalid when redirects is not an array', function () {
+    common.redirects = 'NOT AN ARRAY';
+    var results = m.validate(common);
+    results.errors['InvalidPropertyTypeRedirects'].toString().should.equal(
+      'Error: `redirects` must be of type `array`');
+  });
+
+  it('should be invalid when redirects is not an array of objects', function () {
+    common.redirects = [
+      'asdf',
+      {"to": "asdf", "from": "qwer"}
+    ];
+    var results = m.validate(common);
+    results.errors['InvalidItemTypeRedirects'].toString().should.equal(
+      'Error: items of array `redirects` must be of type `object`');
+  });
+
+  it('should be invalid when redirects is not an array of objects with string values', function () {
+    common.redirects = [
+      {
+        "to": ["NOT", "A", "STRING"],
+        "from": "qwer"
+      }
+    ];
+    var results = m.validate(common);
+    results.errors['InvalidPropertyTypeRedirectsTo'].toString().should.equal(
+      'Error: `to` must be of type `string`');
+  });
+
+  it('should be invalid when redirect items have unexpected properties', function () {
+    common.redirects = [
+        {"bar": "asdf", "foo": "qwer"},
+        {"to": "asdf", "from": "qwer"}
+    ];
+    var results = m.validate(common);
+    results.errors['UnexpectedPropertyRedirects'].toString().should.equal(
+      'Error: Unexpected property `foo` found in `redirects`');
   });
 
   it('should be valid when chrome is an object with a boolean navigation property', function () {
