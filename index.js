@@ -262,12 +262,14 @@ var Manifest = function () {
         continue;
       }
 
-      if (schema.properties[k].minLength && subject[k].toString().length < schema.properties[k].minLength) {
+      if (schema.properties[k].minLength &&
+          subject[k].toString().length < schema.properties[k].minLength) {
         errors[glueKey('InvalidPropertyLength', parents, k)] = new Error(
             '`' + k + '` must not be empty');
       }
 
-      if (schema.properties[k].maxLength && subject[k].toString().length > schema.properties[k].maxLength) {
+      if (schema.properties[k].maxLength &&
+          subject[k].toString().length > schema.properties[k].maxLength) {
         errors['InvalidPropertyLength' + camelCase(k)] = new Error(
           '`' + k + '` must not exceed length ' + schema.properties[k].maxLength);
       }
@@ -277,7 +279,8 @@ var Manifest = function () {
   var hasValidDeveloperUrl = function () {
     if (self.manifest.developer && self.manifest.developer.url) {
       if (!pathValid(self.manifest.developer.url, {canHaveProtocol: true})) {
-        errors['InvalidDeveloperUrl'] = new Error('Developer URL must be an absolute HTTP or HTTPS URL');
+        errors['InvalidDeveloperUrl'] = new Error(
+          'Developer URL must be an absolute HTTP or HTTPS URL');
       }
     }
   };
@@ -289,7 +292,8 @@ var Manifest = function () {
 
       if (launchPath.length > 0) {
         if (pattern.test(launchPath) === false) {
-          errors['InvalidLaunchPath'] = new Error("`launch_path` must be a path relative to app's origin");
+          errors['InvalidLaunchPath'] = new Error(
+            "`launch_path` must be a path relative to app's origin");
         }
       }
     }
@@ -303,11 +307,13 @@ var Manifest = function () {
         var key = parseInt(k, 10);
 
         if (isNaN(key) || key < 1) {
-          errors['InvalidIconSize' + camelCase(k)] = new Error('Icon size must be a natural number');
+          errors['InvalidIconSize' + camelCase(k)] = new Error(
+            'Icon size must be a natural number');
         }
 
         if (!self.manifest.icons[k] || self.manifest.icons[k].length < 1) {
-          errors['InvalidIconPath' + camelCase(k)] = new Error('Paths to icons must be absolute paths, relative URIs, or data URIs');
+          errors['InvalidIconPath' + camelCase(k)] = new Error(
+            'Paths to icons must be absolute paths, relative URIs, or data URIs');
         }
       }
     }
