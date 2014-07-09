@@ -82,7 +82,8 @@
             "anyOf": ["portrait", "landscape", "portrait-secondary", "landscape-secondary", "portrait-primary", "landscape-primary"]
         },
         "origin": {
-
+            "type": "string",
+            "pattern": "(^app://[a-z0-9]+([-.]{1}[a-z0-9]+)*)|(.[a-z]{2,5}$)"
         },
         "permissions": {
 

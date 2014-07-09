@@ -9,6 +9,12 @@ var DEFAULT_WEBAPP_MRKT_URLS = [
   "https://marketplace-dev.allizom.org"
 ];
 
+var BANNED_ORIGINS = [
+  "gaiamobile.org",
+  "mozilla.com",
+  "mozilla.org"
+]
+
 var Warning = function (message) {
   this.name = 'Warning';
   this.message = message || '';
@@ -448,6 +454,18 @@ var Manifest = function () {
         errors['InvalidAppCachePathURL'] = new Error(
           'The `appcache_path` must be a full, absolute URL to the application ' +
           'cache manifest');
+      }
+    }
+  };
+
+  var hasValidOrigin = function () {
+    if (['certified', 'privileged'].indexOf(self.manifest.type) === -1) {
+      errors['InvalidOriginType'] = new Error(
+        'Apps that are not privileged may not use the `origin` field of the manifest');
+    } else {
+      if (BANNED_ORIGINS.indexOf(self.manifest.origin) > -1) {
+        errors['InvalidOriginReference'] = new Error(
+          'App origins may not reference any of the following: ' + BANNED_ORIGINS.join(','));
       }
     }
   };
