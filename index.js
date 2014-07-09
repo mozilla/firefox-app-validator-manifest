@@ -546,7 +546,6 @@ Actual rules here https://github.com/mozilla/app-validator/blob/master/appvalida
 var RULES = {
   "disallowed_nodes": ["widget"],
   "child_nodes": {
-    "required_features": {"expected_type": "object"},
     "activities": {
         "expected_type": "object",
         "allowed_nodes": ["*"],
