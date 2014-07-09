@@ -570,6 +570,7 @@ describe('validate', function () {
   describe('required_features', function () {
     it('should be invalid when not an array', function () {
       common.required_features = 'pew pew pew';
+
       var results = m.validate(common);
       results.errors['InvalidPropertyTypeRequiredFeatures'].toString().should.equal(
         'Error: `required_features` must be of type `array`');
@@ -579,6 +580,7 @@ describe('validate', function () {
       common.required_features = [
         { what: 'i dont even' }
       ];
+
       var results = m.validate(common);
       results.errors['InvalidItemTypeRequiredFeatures'].toString().should.equal(
         'Error: items of array `required_features` must be of type `string`');
@@ -586,10 +588,49 @@ describe('validate', function () {
 
     it('should be valid when an empty array', function () {
       common.required_features = [];
+
       var results = m.validate(common);
       should.not.exist(results.errors['InvalidPropertyLengthRequiredFeatures']);
     });
   });
 
+  describe('origin', function () {
+    it('should be invalid when the origin is in the incorrect format', function () {
+      common.type = 'privileged';
+      common.origin = '1';
 
+      var results = m.validate(common);
+      results.errors['InvalidOriginFormat'].toString().should.equal(
+        'Error: Origin format is invalid');
+    });
+
+    it('should be invalid when the app is not privileged', function () {
+      common.type = 'web';
+      common.origin = 'app://validurl.com';
+
+      var results = m.validate(common);
+      results.errors['InvalidOriginType'].toString().should.equal(
+        'Error: Apps that are not privileged may not use the `origin` field of the manifest');
+    });
+
+    it('should be invalid when the app has an banned origin', function () {
+      common.type = 'privileged';
+      common.origin = 'app://mozilla.org';
+
+      var results = m.validate(common, {packaged: true});
+      results.errors['InvalidOriginReference'].toString().should.equal(
+        'Error: App origins may not reference any of the following: ' +
+        'gaiamobile.org,mozilla.com,mozilla.org');
+    });
+
+    it('should be valid when the app is privileged and has a valid origin', function () {
+      common.type = 'privileged';
+      common.origin = 'app://validurl.com';
+
+      var results = m.validate(common, {packaged: true});
+      should.not.exist(results.errors['InvalidOriginFormat']);
+      should.not.exist(results.errors['InvalidOriginType']);
+      should.not.exist(results.errors['InvalidOriginReference']);
+    });
+  });
 });

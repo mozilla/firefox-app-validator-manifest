@@ -459,13 +459,20 @@ var Manifest = function () {
   };
 
   var hasValidOrigin = function () {
-    if (['certified', 'privileged'].indexOf(self.manifest.type) === -1) {
-      errors['InvalidOriginType'] = new Error(
-        'Apps that are not privileged may not use the `origin` field of the manifest');
-    } else {
-      if (BANNED_ORIGINS.indexOf(self.manifest.origin) > -1) {
-        errors['InvalidOriginReference'] = new Error(
-          'App origins may not reference any of the following: ' + BANNED_ORIGINS.join(','));
+    if (self.manifest.origin) {
+      if (['certified', 'privileged'].indexOf(self.manifest.type) === -1) {
+        errors['InvalidOriginType'] = new Error(
+          'Apps that are not privileged may not use the `origin` field of the manifest');
+      } else {
+        var pattern = new RegExp(common.properties.origin.pattern);
+
+        if (pattern.test(clean(self.manifest.origin)) === false) {
+          errors['InvalidOriginFormat'] = new Error(
+            'Origin format is invalid');
+        } else if (BANNED_ORIGINS.indexOf(self.manifest.origin.split('//')[1]) > -1) {
+          errors['InvalidOriginReference'] = new Error(
+            'App origins may not reference any of the following: ' + BANNED_ORIGINS.join(','));
+        }
       }
     }
   };
@@ -490,6 +497,7 @@ var Manifest = function () {
     hasValidScreenSize();
     hasValidType();
     hasValidAppCachePath();
+    hasValidOrigin();
 
     return {
       errors: errors,
@@ -561,12 +569,6 @@ var RULES = {
     "messages": {
         "expected_type": "object",
         "process": lambda s: s.process_messages,
-    },
-    "origin": {
-        "expected_type": "string",
-        "value_matches": /^app:\/\/[a-z0-9]+([-.{1}[a-z0-9]+)/
-                         /\.[a-z]{2,5}$/]
-        "process": lambda s: s.process_origin,
     },
   }
 };
