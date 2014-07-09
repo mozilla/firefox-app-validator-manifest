@@ -98,7 +98,10 @@
             }
         },
         "required_features": {
-
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
         },
         "role": {
             "type": "string",

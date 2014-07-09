@@ -556,4 +556,31 @@ describe('validate', function () {
     should.not.exist(results.errors['InvalidAppCachePathURL']);
     should.not.exist(results.errors['InvalidAppCachePathType']);
   });
+
+  describe('required_features', function () {
+    
+    it('should be invalid when not an array', function () {
+      common.required_features = 'pew pew pew';
+      var results = m.validate(common);
+      results.errors['InvalidPropertyTypeRequiredFeatures'].toString().should.equal(
+        'Error: `required_features` must be of type `array`');
+    });
+
+    it('should be invalid when not an array of strings', function () {
+      common.required_features = [
+        { what: 'i dont even' }
+      ];
+      var results = m.validate(common);
+      results.errors['InvalidItemTypeRequiredFeatures'].toString().should.equal(
+        'Error: items of array `required_features` must be of type `string`');
+    });
+  
+    it('should be valid when an empty array', function () {
+      common.required_features = [];
+      var results = m.validate(common);
+      should.not.exist(results.errors['InvalidPropertyLengthRequiredFeatures']);
+    });
+
+  });
+
 });
