@@ -37,7 +37,11 @@ This is the Firefox App manifest validator for verifying that your `manifest.web
 
 ## Tests
 
+    # To run tests once
     npm test
+
+    # To run tests continually on file change
+    npm run-script testwatch
 
 ## License
 
