@@ -386,179 +386,188 @@ describe('validate', function () {
       "Error: `min_height` must be a number");
   });
 
-  it('should be valid when type is one of the expected values', function () {
-    ['web', 'privileged', 'certified'].forEach(function (type) {
-      common.type = type;
+  describe('type', function () {
+    it('should be valid when type is one of the expected values', function () {
+      ['web', 'privileged', 'certified'].forEach(function (type) {
+        common.type = type;
+        var results = m.validate(common);
+        should.not.exist(results.errors['InvalidStringTypeType']);
+      });
+    });
+
+    it('should be invalid when type is not one of web, privileged, or certified', function () {
+      common.type = 'bonafide';
       var results = m.validate(common);
-      should.not.exist(results.errors['InvalidStringTypeType']);
+      results.errors['InvalidStringTypeType'].toString().should.equal(
+        'Error: `type` must be one of the following: web,privileged,certified');
+    });
+
+    it("should be invalid when type is not a string", function () {
+      common.type = ['NOT', 'A', 'STRING'];
+      var results = m.validate(common);
+      results.errors['InvalidPropertyTypeType'].toString().should.equal(
+        'Error: `type` must be of type `string`');
+    });
+
+    it('should be invalid when type is certified but app is listed', function () {
+      common.type = 'certified';
+      var results = m.validate(common, {listed: true});
+      results.errors['InvalidTypeCertifiedListed'].toString().should.equal(
+        'Error: `certified` apps cannot be listed');
+    });
+
+    it('should be invalid when type is not web but app is not packaged', function () {
+      common.type = 'privileged';
+      var results = m.validate(common, {packaged: false});
+      results.errors['InvalidTypeWebPrivileged'].toString().should.equal(
+        'Error: unpackaged web apps may not have a type of `certified` or `privileged`');
     });
   });
 
-  it('should be invalid when type is not one of web, privileged, or certified', function () {
-    common.type = 'bonafide';
-    var results = m.validate(common);
-    results.errors['InvalidStringTypeType'].toString().should.equal(
-      'Error: `type` must be one of the following: web,privileged,certified');
-  });
+  describe('fullscreen', function () {
+    it('should be valid when fullscreen is "true" or "false"', function () {
+      ['true', 'false'].forEach(function (val) {
+        common.fullscreen = val;
+        var results = m.validate(common);
+        should.not.exist(results.errors['InvalidStringTypeFullscreen']);
+      });
+    });
 
-  it("should be invalid when type is not a string", function () {
-    common.type = ['NOT', 'A', 'STRING'];
-    var results = m.validate(common);
-    results.errors['InvalidPropertyTypeType'].toString().should.equal(
-      'Error: `type` must be of type `string`');
-  });
-
-  it('should be invalid when type is certified but app is listed', function () {
-    common.type = 'certified';
-    var results = m.validate(common, {listed: true});
-    results.errors['InvalidTypeCertifiedListed'].toString().should.equal(
-      'Error: `certified` apps cannot be listed');
-  });
-
-  it('should be invalid when type is not web but app is not packaged', function () {
-    common.type = 'privileged';
-    var results = m.validate(common, {packaged: false});
-    results.errors['InvalidTypeWebPrivileged'].toString().should.equal(
-      'Error: unpackaged web apps may not have a type of `certified` or `privileged`');
-  });
-
-  it('should be valid when fullscreen is "true" or "false"', function () {
-    ['true', 'false'].forEach(function (val) {
-      common.fullscreen = val;
+    it('should be invalid when fullscreen is not "true" or "false"', function () {
+      common.fullscreen = 'maybe';
       var results = m.validate(common);
-      should.not.exist(results.errors['InvalidStringTypeFullscreen']);
+      results.errors['InvalidStringTypeFullscreen'].toString().should.equal(
+        'Error: `fullscreen` must be one of the following: true,false');
+    });
+
+    it('should be invalid when fullscreen is not a string', function () {
+      common.fullscreen = ['NOT', 'A', 'STRING'];
+      var results = m.validate(common);
+      results.errors['InvalidPropertyTypeFullscreen'].toString().should.equal(
+        'Error: `fullscreen` must be of type `string`');
     });
   });
 
-  it('should be invalid when fullscreen is not "true" or "false"', function () {
-    common.fullscreen = 'maybe';
-    var results = m.validate(common);
-    results.errors['InvalidStringTypeFullscreen'].toString().should.equal(
-      'Error: `fullscreen` must be one of the following: true,false');
-  });
+  describe('redirects', function () {
+    it('should be valid when redirects is an array of objects with expected properties', function () {
+      common.redirects = [
+        {"to": "asdf", "from": "qwer"},
+        {"to": "asdf", "from": "qwer"},
+      ];
+      var results = m.validate(common);
+      should.not.exist(results.errors['InvalidPropertyTypeRedirects']);
+      should.not.exist(results.errors['InvalidItemTypeRedirects']);
+      should.not.exist(results.errors['UnexpectedPropertyRedirects']);
+    });
 
-  it('should be invalid when fullscreen is not a string', function () {
-    common.fullscreen = ['NOT', 'A', 'STRING'];
-    var results = m.validate(common);
-    results.errors['InvalidPropertyTypeFullscreen'].toString().should.equal(
-      'Error: `fullscreen` must be of type `string`');
-  });
+    it('should be invalid when redirects is not an array', function () {
+      common.redirects = 'NOT AN ARRAY';
+      var results = m.validate(common);
+      results.errors['InvalidPropertyTypeRedirects'].toString().should.equal(
+        'Error: `redirects` must be of type `array`');
+    });
 
-  it('should be valid when redirects is an array of objects with expected properties', function () {
-    common.redirects = [
-      {"to": "asdf", "from": "qwer"},
-      {"to": "asdf", "from": "qwer"},
-    ];
-    var results = m.validate(common);
-    should.not.exist(results.errors['InvalidPropertyTypeRedirects']);
-    should.not.exist(results.errors['InvalidItemTypeRedirects']);
-    should.not.exist(results.errors['UnexpectedPropertyRedirects']);
-  });
-
-  it('should be invalid when redirects is not an array', function () {
-    common.redirects = 'NOT AN ARRAY';
-    var results = m.validate(common);
-    results.errors['InvalidPropertyTypeRedirects'].toString().should.equal(
-      'Error: `redirects` must be of type `array`');
-  });
-
-  it('should be invalid when redirects is not an array of objects', function () {
-    common.redirects = [
-      'asdf',
-      {"to": "asdf", "from": "qwer"}
-    ];
-    var results = m.validate(common);
-    results.errors['InvalidItemTypeRedirects'].toString().should.equal(
-      'Error: items of array `redirects` must be of type `object`');
-  });
-
-  it('should be invalid when redirects is not an array of objects with string values', function () {
-    common.redirects = [
-      {
-        "to": ["NOT", "A", "STRING"],
-        "from": "qwer"
-      }
-    ];
-    var results = m.validate(common);
-    results.errors['InvalidPropertyTypeRedirectsTo'].toString().should.equal(
-      'Error: `to` must be of type `string`');
-  });
-
-  it('should be invalid when redirect items have unexpected properties', function () {
-    common.redirects = [
-        {"bar": "asdf", "foo": "qwer"},
+    it('should be invalid when redirects is not an array of objects', function () {
+      common.redirects = [
+        'asdf',
         {"to": "asdf", "from": "qwer"}
-    ];
-    var results = m.validate(common);
-    results.errors['UnexpectedPropertyRedirects'].toString().should.equal(
-      'Error: Unexpected property `foo` found in `redirects`');
+      ];
+      var results = m.validate(common);
+      results.errors['InvalidItemTypeRedirects'].toString().should.equal(
+        'Error: items of array `redirects` must be of type `object`');
+    });
+
+    it('should be invalid when redirects is not an array of objects with string values', function () {
+      common.redirects = [
+        {
+          "to": ["NOT", "A", "STRING"],
+          "from": "qwer"
+        }
+      ];
+      var results = m.validate(common);
+      results.errors['InvalidPropertyTypeRedirectsTo'].toString().should.equal(
+        'Error: `to` must be of type `string`');
+    });
+
+    it('should be invalid when redirect items have unexpected properties', function () {
+      common.redirects = [
+          {"bar": "asdf", "foo": "qwer"},
+          {"to": "asdf", "from": "qwer"}
+      ];
+      var results = m.validate(common);
+      results.errors['UnexpectedPropertyRedirects'].toString().should.equal(
+        'Error: Unexpected property `foo` found in `redirects`');
+    });
   });
 
-  it('should be valid when chrome is an object with a boolean navigation property', function () {
-    [true, false].forEach(function (val) {
+  describe('chrome', function () {
+    it('should be valid when chrome is an object with a boolean navigation property', function () {
+      [true, false].forEach(function (val) {
+        common.chrome = {
+          navigation: val
+        };
+        var results = m.validate(common);
+        should.not.exist(results.errors['InvalidPropertyTypeChrome']);
+        should.not.exist(results.errors['InvalidChromeProperties']);
+        should.not.exist(results.errors['UnexpectedPropertyChrome']);
+      });
+    });
+
+    it('should be invalid when chrome is not an object', function () {
+      common.chrome = ['NOT', 'AN', 'OBJECT'];
+      var results = m.validate(common);
+      results.errors['InvalidPropertyTypeChrome'].toString().should.equal(
+        'Error: `chrome` must be of type `object`');
+    });
+
+    it('should be invalid when chrome.navigation is not boolean', function () {
       common.chrome = {
-        navigation: val
+        navigation: 'woofwoof'
       };
       var results = m.validate(common);
-      should.not.exist(results.errors['InvalidPropertyTypeChrome']);
-      should.not.exist(results.errors['InvalidChromeProperties']);
-      should.not.exist(results.errors['UnexpectedPropertyChrome']);
+      results.errors['InvalidPropertyTypeChromeNavigation'].toString().should.equal(
+        'Error: `navigation` must be of type `boolean`');
+    });
+
+    it('should be invalid when chrome is an object with unexpected properties', function () {
+      common.chrome = {
+        shiny: true
+      };
+      var results = m.validate(common);
+      results.errors['UnexpectedPropertyChrome'].toString().should.equal(
+        'Error: Unexpected property `shiny` found in `chrome`');
     });
   });
 
-  it('should be invalid when chrome is not an object', function () {
-    common.chrome = ['NOT', 'AN', 'OBJECT'];
-    var results = m.validate(common);
-    results.errors['InvalidPropertyTypeChrome'].toString().should.equal(
-      'Error: `chrome` must be of type `object`');
-  });
+  describe('appcache_path', function () {
+    it('should be an invalid appcache_path if it is a packaged app', function () {
+      common.appcache_path = 'http://kittens.com';
 
-  it('should be invalid when chrome.navigation is not boolean', function () {
-    common.chrome = {
-      navigation: 'woofwoof'
-    };
-    var results = m.validate(common);
-    results.errors['InvalidPropertyTypeChromeNavigation'].toString().should.equal(
-      'Error: `navigation` must be of type `boolean`');
-  });
+      var results = m.validate(common, {packaged: true});
+      results.errors['InvalidAppCachePathType'].toString().should.equal(
+        "Error: packaged apps cannot use Appcache. The `appcache_path` field " +
+        "should not be provided in a packaged app's manifest")
+    });
 
-  it('should be invalid when chrome is an object with unexpected properties', function () {
-    common.chrome = {
-      shiny: true
-    };
-    var results = m.validate(common);
-    results.errors['UnexpectedPropertyChrome'].toString().should.equal(
-      'Error: Unexpected property `shiny` found in `chrome`');
-  });
+    it('should be an invalid appcache_path if it is not an absolute URL', function () {
+      common.appcache_path = '/some/relative/url';
 
-  it('should be an invalid appcache_path if it is a packaged app', function () {
-    common.appcache_path = 'http://kittens.com';
+      var results = m.validate(common);
+      results.errors['InvalidAppCachePathURL'].toString().should.equal(
+        'Error: The `appcache_path` must be a full, absolute URL to the application ' +
+        'cache manifest');
+    });
 
-    var results = m.validate(common, {packaged: true});
-    results.errors['InvalidAppCachePathType'].toString().should.equal(
-      "Error: packaged apps cannot use Appcache. The `appcache_path` field " +
-      "should not be provided in a packaged app's manifest")
-  });
+    it('should be a valid appcache_path', function () {
+      common.appcache_path = 'http://kittens.com';
 
-  it('should be an invalid appcache_path if it is not an absolute URL', function () {
-    common.appcache_path = '/some/relative/url';
-
-    var results = m.validate(common);
-    results.errors['InvalidAppCachePathURL'].toString().should.equal(
-      'Error: The `appcache_path` must be a full, absolute URL to the application ' +
-      'cache manifest');
-  });
-
-  it('should be a valid appcache_path', function () {
-    common.appcache_path = 'http://kittens.com';
-
-    var results = m.validate(common);
-    should.not.exist(results.errors['InvalidAppCachePathURL']);
-    should.not.exist(results.errors['InvalidAppCachePathType']);
+      var results = m.validate(common);
+      should.not.exist(results.errors['InvalidAppCachePathURL']);
+      should.not.exist(results.errors['InvalidAppCachePathType']);
+    });
   });
 
   describe('required_features', function () {
-    
     it('should be invalid when not an array', function () {
       common.required_features = 'pew pew pew';
       var results = m.validate(common);
@@ -574,13 +583,13 @@ describe('validate', function () {
       results.errors['InvalidItemTypeRequiredFeatures'].toString().should.equal(
         'Error: items of array `required_features` must be of type `string`');
     });
-  
+
     it('should be valid when an empty array', function () {
       common.required_features = [];
       var results = m.validate(common);
       should.not.exist(results.errors['InvalidPropertyLengthRequiredFeatures']);
     });
-
   });
+
 
 });
