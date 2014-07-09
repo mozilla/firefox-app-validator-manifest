@@ -11,7 +11,8 @@
     "should": "~4.0.4"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha"
+    "test": "./node_modules/.bin/mocha",
+    "testwatch": "./node_modules/.bin/mocha -w -R spec"
   },
   "repository": {
     "type": "git",

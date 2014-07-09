@@ -544,19 +544,6 @@ var RULES = {
         "expected_type": "object",
         "process": lambda s: s.process_messages,
     },
-    "redirects": {
-        "expected_type": "object",
-        "child_nodes": {
-            "expected_type": "object",
-            "required_nodes": ["to", "from"],
-            "child_nodes": {
-                "to": {"expected_type": "string",
-                       "not_empty": true},
-                "from": {"expected_type": "string",
-                         "not_empty": true},
-            }
-        },
-    },
     "origin": {
         "expected_type": "string",
         "value_matches": /^app:\/\/[a-z0-9]+([-.{1}[a-z0-9]+)/
