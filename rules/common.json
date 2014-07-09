@@ -69,7 +69,10 @@
             "type": "object"
         },
         "messages": {
-
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
         },
         "name": {
             "description": "App name",

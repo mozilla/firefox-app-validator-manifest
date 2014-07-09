@@ -464,6 +464,29 @@ var Manifest = function () {
     }
   };
 
+  var hasValidMessages = function () {
+    var messages = self.manifest.messages;
+    if (!messages || '[object Array]' !== toString.call(messages)) {
+      return;
+    }
+    for (var i=0; i<messages.length; i++) {
+      var item = messages[i];
+      if ('[object Object]' !== toString.call(item)) {
+        continue;
+      }
+      var keyCt = 0;
+      for (var k in item) {
+        if (item.hasOwnProperty(k)) {
+          keyCt++;
+        }
+      }
+      if (keyCt > 1) {
+        errors['InvalidMessagesEntry'] = new Error(
+          'objects in array `messages` must each have only one property');
+      }
+    }
+  };
+
   var hasValidOrigin = function () {
     if (self.manifest.origin) {
       if (['certified', 'privileged'].indexOf(self.manifest.type) === -1) {
@@ -501,6 +524,7 @@ var Manifest = function () {
     hasValidDefaultLocale();
     hasValidInstallsAllowedFrom();
     hasValidScreenSize();
+    hasValidMessages();
     hasValidType();
     hasValidAppCachePath();
     hasValidOrigin();
@@ -571,10 +595,6 @@ var RULES = {
             }
         },
         "process": lambda s: s.process_permissions
-    },
-    "messages": {
-        "expected_type": "object",
-        "process": lambda s: s.process_messages,
     },
   }
 };

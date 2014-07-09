@@ -594,6 +594,36 @@ describe('validate', function () {
     });
   });
 
+  describe('messages', function () {
+    it('should be invalid when not an array', function () {
+      common.messages = 'pew pew pew';
+
+      var results = m.validate(common);
+      results.errors['InvalidPropertyTypeMessages'].toString().should.equal(
+        'Error: `messages` must be of type `array`');
+    });
+
+    it('should be invalid when not an array of objects', function () {
+      common.messages = ['THESE', 'ARE', 'NOT', 'OBJECTS'];
+
+      var results = m.validate(common);
+      results.errors['InvalidItemTypeMessages'].toString().should.equal(
+        'Error: items of array `messages` must be of type `object`');
+    });
+
+    it('should be invalid when an item is an object with more than one property', function () {
+      common.messages = [
+        {'alarm': '/foo.html'},
+        {'this': 'is', 'an': 'invalid', 'entry': 'doh'},
+        {'notification': '/bar.html'}
+      ];
+
+      var results = m.validate(common);
+      results.errors['InvalidMessagesEntry'].toString().should.equal(
+        'Error: objects in array `messages` must each have only one property');
+    });
+  });
+
   describe('origin', function () {
     it('should be invalid when the origin is in the incorrect format', function () {
       common.type = 'privileged';
