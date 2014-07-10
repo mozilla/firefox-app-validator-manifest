@@ -31,7 +31,7 @@ var clean = function (word) {
 };
 
 var camelCase = function (word) {
-  var words = word.split('_');
+  var words = word.toString().split('_');
   var finalWord = [];
 
   words.forEach(function (w) {
@@ -41,15 +41,28 @@ var camelCase = function (word) {
   return finalWord.join('');
 };
 
-var glueKey = function (prefix, parents, name) {
-  var parts = [];
-  for (var i=0, part; part=parents[i]; i++) {
-    parts.push(camelCase(part));
-  }
-  if (name) {
-    parts.push(camelCase(name));
-  }
+// glueKey takes a string prefix, an array of string parents, and then any
+// number of additional parameters. Except for the prefix, these are all
+// converted to CamelCase and concatenated together
+var glueKey = function (prefix, parents) {
+  var rest = Array.prototype.slice.call(arguments, 2);
+  var parts = parents.concat(rest).filter(function (item) {
+    return item !== '';
+  }).map(function (item) {
+    return camelCase(item);
+  });
   return prefix + parts.join('');
+};
+
+// glueKey takes a string prefix, an array of string parents, and then any
+// number of additional parameters. These are all concatenated together with a
+// '.' separator.
+var glueObjectPath = function (prefix, parents) {
+  var rest = Array.prototype.slice.call(arguments, 2);
+  var parts = parents.concat(rest).filter(function (item) {
+    return item !== '';
+  });
+  return prefix + parts.join('.');
 };
 
 var parseUrl = function (path) {
@@ -121,25 +134,56 @@ var Manifest = function () {
     }
   };
 
-  var hasValidSchema = function (subject, schema, parents) {
-    hasMandatoryKeys(subject, schema, parents);
-    hasNoUnexpectedKeys(subject, schema, parents);
-    hasValidPropertyTypes(subject, schema, parents);
-    hasValidItemTypes(subject, schema, parents);
-    hasValidStringItem(subject, schema, parents);
-    hasRequiredLength(subject, schema, parents);
+  var hasValidSchema = function (subject, schema, name, parents) {
+    name = ('undefined' === typeof name) ? '' : name;
+    parents = ('undefined' === typeof parents) ? [] : parents;
 
-    // Recursively check sub-properties, if any.
-    if ('properties' in schema) {
-      for (var k in schema.properties) {
-        if ('properties' in schema.properties[k] && k in subject) {
-          hasValidSchema(subject[k], schema.properties[k], parents.concat([k]));
+    hasValidPropertyType(subject, schema, name, parents);
+
+    if ('string' === typeof subject) {
+      hasValidStringItem(subject, schema, name, parents);
+      hasRequiredStringLength(subject, schema, name, parents);
+    }
+
+    if ('[object Array]' === toString.call(subject)) {
+      if (schema.items) {
+        hasValidItemTypes(subject, schema, name, parents);
+      }
+    }
+
+    if ('[object Object]' === toString.call(subject)) {
+
+      if (schema.required) {
+        hasMandatoryKeys(subject, schema, name, parents);
+      }
+
+      if (schema.properties && !schema.additionalProperties) {
+        hasNoUnexpectedKeys(subject, schema, name, parents);
+      }
+
+      if (schema.properties) {
+        for (var k in schema.properties) {
+          if (k in subject) {
+            hasValidSchema(subject[k], schema.properties[k],
+                           k, parents.concat([name]));
+          }
         }
       }
+
+      if (schema.additionalProperties) {
+        var additional = schema.additionalProperties;
+        for (var k in subject) {
+          if (!schema.properties || !schema.properties.hasOwnProperty(k)) {
+            hasValidSchema(subject[k], additional,
+                           k, parents.concat([name]));
+          }
+        }
+      }
+
     }
   };
 
-  var hasMandatoryKeys = function (subject, schema, parents) {
+  var hasMandatoryKeys = function (subject, schema, name, parents) {
     if (!schema.required) {
       return;
     }
@@ -153,17 +197,18 @@ var Manifest = function () {
 
     for (var i = 0; i < keys.length; i ++) {
       if (!subject || !subject[keys[i]]) {
-        errors[glueKey('MandatoryField', parents, keys[i])] = new Error(
+        errors[glueKey('MandatoryField', parents, name, keys[i])] = new Error(
             'Mandatory field ' + keys[i] + ' is missing');
       }
     }
   };
 
-  var hasNoUnexpectedKeys = function (subject, schema, parents) {
+  var hasNoUnexpectedKeys = function (subject, schema, name, parents) {
     for (var k in subject) {
-      if (!(k in schema.properties)) {
-        errors[glueKey('UnexpectedProperty', parents, '')] = new Error(
-            'Unexpected property `' + k + '` found in `' + parents.join('.') + '`');
+      if (!schema.properties.hasOwnProperty(k)) {
+        errors[glueKey('UnexpectedProperty', parents, name)] = new Error(
+            'Unexpected property `' + k + '` found in `' +
+            glueObjectPath('', parents, name) + '`');
       }
     }
   };
@@ -183,96 +228,61 @@ var Manifest = function () {
     return true;
   };
 
-  var hasValidPropertyTypes = function (subject, schema, parents) {
-    for (var k in subject) {
-      if (!(k in schema.properties)) {
-        continue;
+  var hasValidPropertyType = function (subject, schema, name, parents) {
+      var type = schema.type;
+      if (type && !isValidObjectType(subject, type)) {
+        errors[glueKey('InvalidPropertyType', parents, name)] = new Error(
+            '`' + name + '` must be of type `' + type + '`');
       }
-      var type = schema.properties[k].type;
-      if (!isValidObjectType(subject[k], type)) {
-        errors[glueKey('InvalidPropertyType', parents, k)] = new Error(
-            '`' + k + '` must be of type `' + type + '`');
-      }
-    }
   };
 
-  var hasValidItemTypes = function (subject, schema, parents) {
-    for (var k in subject) {
-      if (!(k in schema.properties)) {
-        continue;
-      }
+  var hasValidItemTypes = function (subject, schema, name, parents) {
+    var itemSchema = schema.items;
 
-      // Only validate if this is declared an an array in the schema, and the
-      // schema specifies items, and the subject itself is in fact an array.
-      var propertySchema = schema.properties[k];
-      var arraySubject = subject[k];
-      if ('array' !== propertySchema.type || !('items' in propertySchema) ||
-          '[object Array]' !== toString.call(arraySubject)) {
-        continue;
-      }
+    // TODO: Implement [object Array] form of items schema
+    if ('[object Object]' === toString.call(itemSchema)) {
+      var type = itemSchema.type;
 
-      var itemSchema = propertySchema.items;
+      // Validate each of the items in the subject array
+      for (var i = 0; i < subject.length; i++) {
+        var itemSubject = subject[i];
 
-      // TODO: Implement [object Array] form of items schema
-      if ('[object Object]' === toString.call(itemSchema)) {
-        var type = itemSchema.type;
-
-        // Validate each of the items in the subject array
-        for (var i=0; i<arraySubject.length; i++) {
-          var itemSubject = arraySubject[i];
-
-          if (!isValidObjectType(itemSubject, type)) {
-            errors[glueKey('InvalidItemType', parents, k)] = new Error(
-                'items of array `' + k + '` must be of type `' + type + '`');
-          }
-
-          if ('properties' in itemSchema) {
-            hasValidSchema(itemSubject, itemSchema, parents.concat([k]));
-          }
-
+        if (!isValidObjectType(itemSubject, type)) {
+          errors[glueKey('InvalidItemType', parents, name)] = new Error(
+              'items of array `' + name + '` must be of type `' + type + '`');
         }
-      }
 
-    }
-  };
+        if ('[object Object]' === toString.call(itemSubject)) {
+          hasValidSchema(itemSubject, itemSchema,
+                         i, parents.concat([name]));
+        }
 
-  var hasValidStringItem = function (subject, schema, parents) {
-    for (var k in subject) {
-      if (!(k in schema.properties)) {
-        continue;
-      }
-
-      if (schema.properties[k].oneOf && schema.properties[k].oneOf.indexOf(subject[k]) === -1) {
-        errors[glueKey('InvalidStringType', parents, k)] = new Error('`' + k +
-               '` must be one of the following: ' + schema.properties[k].oneOf.toString());
-      } else if (schema.properties[k].anyOf) {
-        subject[k].split(',').forEach(function (v) {
-          if (schema.properties[k].anyOf.indexOf(v.trim()) === -1) {
-            errors[glueKey('InvalidStringType', parents, k)] = new Error('`' + k +
-               '` must be any of the following: ' + schema.properties[k].anyOf.toString());
-          }
-        });
       }
     }
   };
 
-  var hasRequiredLength = function (subject, schema, parents) {
-    for (var k in subject) {
-      if (!(k in schema.properties)) {
-        continue;
-      }
+  var hasValidStringItem = function (subject, schema, name, parents) {
+    if (schema.oneOf && schema.oneOf.indexOf(subject) === -1) {
+      errors[glueKey('InvalidStringType', parents, name)] = new Error('`' + name +
+             '` must be one of the following: ' + schema.oneOf.toString());
+    } else if (schema.anyOf) {
+      subject.split(',').forEach(function (v) {
+        if (schema.anyOf.indexOf(v.trim()) === -1) {
+          errors[glueKey('InvalidStringType', parents, name)] = new Error('`' + name +
+             '` must be any of the following: ' + schema.anyOf.toString());
+        }
+      });
+    }
+  };
 
-      if (schema.properties[k].minLength &&
-          subject[k].toString().length < schema.properties[k].minLength) {
-        errors[glueKey('InvalidPropertyLength', parents, k)] = new Error(
-            '`' + k + '` must not be empty');
-      }
-
-      if (schema.properties[k].maxLength &&
-          subject[k].toString().length > schema.properties[k].maxLength) {
-        errors['InvalidPropertyLength' + camelCase(k)] = new Error(
-          '`' + k + '` must not exceed length ' + schema.properties[k].maxLength);
-      }
+  var hasRequiredStringLength = function (subject, schema, name, parents) {
+    if (schema.minLength && subject.toString().length < schema.minLength) {
+      errors[glueKey('InvalidPropertyLength', parents, name)] = new Error(
+          '`' + name + '` must be at least ' + schema.minLength + ' in length');
+    }
+    if (schema.maxLength && subject.toString().length > schema.maxLength) {
+      errors[glueKey('InvalidPropertyLength', parents, name)] = new Error(
+        '`' + name + '` must not exceed length ' + schema.maxLength);
     }
   };
 
@@ -365,7 +375,9 @@ var Manifest = function () {
       return invalid('Empty', '`installs_allowed_from` cannot be empty when present');
     }
 
-    for (var i=0,item; item=self.manifest.installs_allowed_from[i]; i++) {
+    var InstallsAllowedFrom = self.manifest.installs_allowed_from;
+    for (var i = 0; i < InstallsAllowedFrom.length; i++) {
+      var item = InstallsAllowedFrom[i];
 
       if ('string' !== typeof item) {
         return invalid('ArrayOfStrings',
@@ -407,7 +419,8 @@ var Manifest = function () {
       return;
     }
 
-    if (!('min_width' in screenSize || 'min_height' in screenSize)) {
+    if (!(screenSize.hasOwnProperty('min_width') ||
+          screenSize.hasOwnProperty('min_height'))) {
       errors['InvalidEmptyScreenSize'] = new Error(
         '`screen_size` should have at least min_height or min_width');
       return;
@@ -469,7 +482,7 @@ var Manifest = function () {
     if (!messages || '[object Array]' !== toString.call(messages)) {
       return;
     }
-    for (var i=0; i<messages.length; i++) {
+    for (var i = 0; i < messages.length; i++) {
       var item = messages[i];
       if ('[object Object]' !== toString.call(item)) {
         continue;
@@ -516,7 +529,8 @@ var Manifest = function () {
     };
 
     hasValidJSON(content);
-    hasValidSchema(self.manifest, common, []);
+    hasValidSchema(self.manifest, common);
+
     hasValidDeveloperUrl();
     hasValidLaunchPath();
     hasValidIconSizeAndPath();
@@ -557,20 +571,6 @@ var RULES = {
                     "disposition", "filters", "returnValue"
                 ],
                 "child_nodes": WEB_ACTIVITY_HANDLER,
-            }
-        }
-    },
-    "inputs": {
-        "expected_type": "object",
-        "allowed_nodes": ["*"],
-        "not_empty": true,
-        "child_nodes": {
-            "*": {
-                "expected_type": "object",
-                "required_nodes": ["launch_path", "name", "description",
-                                   "types"],
-                "allowed_once_nodes": ["locales"],
-                "child_nodes": INPUT_DEF_OBJ
             }
         }
     },
