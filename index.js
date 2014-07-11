@@ -5,14 +5,14 @@ var sMarketplace = require('./rules/marketplace.json');
 
 // TODO: These should probably go somewhere better.
 var DEFAULT_WEBAPP_MRKT_URLS = [
-  "https://marketplace.firefox.com",
-  "https://marketplace-dev.allizom.org"
+  'https://marketplace.firefox.com',
+  'https://marketplace-dev.allizom.org'
 ];
 
 var BANNED_ORIGINS = [
-  "gaiamobile.org",
-  "mozilla.com",
-  "mozilla.org"
+  'gaiamobile.org',
+  'mozilla.com',
+  'mozilla.org'
 ]
 
 var Warning = function (message) {
