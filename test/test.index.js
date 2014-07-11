@@ -9,7 +9,10 @@ describe('validate', function () {
   beforeEach(function () {
     common = {
       description: 'test app',
-      name: 'app'
+      name: 'app',
+      developer: {
+        name: 'Some Dev'
+      }
     };
   });
 
@@ -106,9 +109,8 @@ describe('validate', function () {
     common.default_locale = '';
 
     var results = m.validate(common);
-
     results.errors['InvalidPropertyLengthDefaultLocale'].toString().should.equal(
-      'Error: `default_locale` must not be empty');
+      'Error: `default_locale` must be at least 1 in length');
   });
 
   it('should have a valid length if a minLength is provided', function () {
@@ -143,7 +145,8 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['InvalidPropertyLengthDeveloperName'].toString().should.equal('Error: `name` must not be empty');
+    results.errors['InvalidPropertyLengthDeveloperName'].toString().should.equal(
+      'Error: `name` must be at least 1 in length');
   });
 
   it('should have an invalid developer name if not string', function () {
@@ -485,7 +488,7 @@ describe('validate', function () {
         }
       ];
       var results = m.validate(common);
-      results.errors['InvalidPropertyTypeRedirectsTo'].toString().should.equal(
+      results.errors['InvalidPropertyTypeRedirects0To'].toString().should.equal(
         'Error: `to` must be of type `string`');
     });
 
@@ -495,8 +498,8 @@ describe('validate', function () {
           {"to": "asdf", "from": "qwer"}
       ];
       var results = m.validate(common);
-      results.errors['UnexpectedPropertyRedirects'].toString().should.equal(
-        'Error: Unexpected property `foo` found in `redirects`');
+      results.errors['UnexpectedPropertyRedirects0'].toString().should.equal(
+        'Error: Unexpected property `foo` found in `redirects.0`');
     });
   });
 
@@ -565,6 +568,147 @@ describe('validate', function () {
       should.not.exist(results.errors['InvalidAppCachePathURL']);
       should.not.exist(results.errors['InvalidAppCachePathType']);
     });
+  });
+
+  describe('inputs', function () {
+    it('should be valid with expected content', function () {
+      common.inputs = {
+        'input1': {
+          'name': 'Symbols',
+          'description': 'Symbols Virtual Keyboard',
+          'launch_path': '/input1.html',
+          'types': ['text']
+        },
+        'siri': {
+          'name': 'Voice Control',
+          'description': 'Voice Control Input',
+          'launch_path': '/vc.html',
+          'types': ['text', 'url']
+        }
+      };
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+    });
+
+    it('should be invalid when not an object', function () {
+      common.inputs = 'NOT AN OBJECT';
+      var results = m.validate(common);
+      results.errors['InvalidPropertyTypeInputs'].toString().should.equal(
+        'Error: `inputs` must be of type `object`');
+    });
+
+    it('should be invalid when an entry is not an object', function () {
+      common.developer = { 'name': 'Frank' };
+      common.inputs = { 'input1': 'i like turtles' };
+      var results = m.validate(common);
+      results.errors['InvalidPropertyTypeInputsInput1'].toString().should.equal(
+        'Error: `input1` must be of type `object`');
+    });
+
+    it('should be invalid when an entry is missing `name`', function () {
+      common.inputs = {
+        'input1': {
+          'description': 'Symbols Virtual Keyboard',
+          'launch_path': '/input1.html',
+          'types': ['text']
+        }
+      };
+      var results = m.validate(common);
+      results.errors['MandatoryFieldInputsInput1Name'].toString().should.equal(
+        'Error: Mandatory field name is missing');
+    });
+
+    it('should be invalid when an entry is missing `description`', function () {
+      common.inputs = {
+          'input1': {
+            'name': 'Symbols',
+            'launch_path': '/input1.html',
+            'types': ['text']
+          }
+        }
+      var results = m.validate(common);
+      results.errors['MandatoryFieldInputsInput1Description'].toString().should.equal(
+        'Error: Mandatory field description is missing');
+    });
+
+    it('should be invalid when an entry is missing `launch_path`', function () {
+      common.inputs = {
+          'input1': {
+            'name': 'Symbols',
+            'description': 'Symbols Virtual Keyboard',
+            'types': ['text']
+          }
+        }
+      var results = m.validate(common);
+      results.errors['MandatoryFieldInputsInput1LaunchPath'].toString().should.equal(
+        'Error: Mandatory field launch_path is missing');
+    });
+
+    it('should be invalid when an entry is missing `types`', function () {
+      common.inputs = {
+          'input1': {
+            'name': 'Symbols',
+            'launch_path': '/input1.html',
+            'description': 'Symbols Virtual Keyboard'
+          }
+        }
+      var results = m.validate(common);
+      results.errors['MandatoryFieldInputsInput1Types'].toString().should.equal(
+        'Error: Mandatory field types is missing');
+    });
+
+    it('should be invalid when an entry has an incorrect `types` value', function () {
+      common.inputs = {
+        'input1': {
+          'name': 'Symbols',
+          'description': 'Symbols Virtual Keyboard',
+          'launch_path': '/input1.html',
+          'types': ['foo']
+        }
+      };
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+    });
+
+    it('should be valid with valid `locales` object', function () {
+      common.inputs = {
+        'input1': {
+          'name': 'Symbols',
+          'description': 'Symbols Virtual Keyboard',
+          'launch_path': '/input1.html',
+          'types': ['text'],
+          'locales': {
+            'es': {
+              'name': 'foo',
+              'description': 'bar'
+            }
+          }
+        }
+      };
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+    });
+
+    it('should be valid with invalid `locales` object', function () {
+      common.inputs = {
+        'input1': {
+          'name': 'Symbols',
+          'description': 'Symbols Virtual Keyboard',
+          'launch_path': '/input1.html',
+          'types': ['text'],
+          'locales': {
+            'es': {
+              'name': 'foo',
+              'description': 'bar',
+              'foo': 'bar2'
+            }
+          }
+        }
+      };
+      var results = m.validate(common);
+      results.errors.should.not.be.empty;
+    });
+
   });
 
   describe('required_features', function () {
