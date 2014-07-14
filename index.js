@@ -581,27 +581,6 @@ var RULES = {
             }
         }
     },
-    "permissions": {
-        "allowed_nodes": PERMISSIONS['web'] |
-                         PERMISSIONS['privileged'] |
-                         PERMISSIONS['certified'],
-        "expected_type": "object",
-        "unknown_node_level": "error",
-        "child_nodes": {
-            "*": {
-                "expected_type": "object",
-                "required_nodes": ["description"],
-                "allowed_once_nodes": ["access"],
-                "child_nodes": {
-                    "description": {"expected_type": "string",
-                                    "not_empty": true},
-                    "access": {"expected_type": "string",
-                               "not_empty": true}
-                }
-            }
-        },
-        "process": lambda s: s.process_permissions
-    },
   }
 };
 */
