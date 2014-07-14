@@ -20,7 +20,8 @@ describe('validate', function () {
     try {
       var results = m.validate('');
     } catch (err) {
-      err.toString().should.equal('Error: Manifest is not in a valid JSON format or has invalid properties');
+      err.toString().should.equal('Error: Manifest is not in a valid JSON format ' +
+        'or has invalid properties');
     }
   });
 
@@ -30,7 +31,7 @@ describe('validate', function () {
 
     ['name', 'description', 'developer'].forEach(function (f) {
       var currKey = results.errors['MandatoryField' + f.charAt(0).toUpperCase() + f.slice(1)];
-      currKey.toString().should.equal('Error: Mandatory field ' + f + ' is missing');
+      currKey.should.equal('Mandatory field ' + f + ' is missing');
     });
   });
 
@@ -41,7 +42,7 @@ describe('validate', function () {
 
     ['name', 'description'].forEach(function (f) {
       var currKey = results.errors['MandatoryField' + f.charAt(0).toUpperCase() + f.slice(1)];
-      currKey.toString().should.equal('Error: Mandatory field ' + f + ' is missing');
+      currKey.should.equal('Mandatory field ' + f + ' is missing');
       should.not.exist(results.errors.MandatoryFieldDeveloper);
     });
   });
@@ -53,7 +54,7 @@ describe('validate', function () {
     try {
       var results = m.validate(common);
     } catch (err) {
-      err.toString().should.equal('Error: Manifest is not in a valid JSON format or has invalid properties');
+      err.should.equal('Manifest is not in a valid JSON format or has invalid properties');
     }
   });
 
@@ -61,8 +62,8 @@ describe('validate', function () {
     common.launch_path = [];
 
     var results = m.validate(common);
-    results.errors['InvalidPropertyTypeLaunchPath'].toString().should.equal(
-      "Error: `launch_path` must be of type `string`");
+    results.errors.InvalidPropertyTypeLaunchPath.should.equal(
+      "`launch_path` must be of type `string`");
   });
 
   it('should return an invalid launch path', function () {
@@ -70,7 +71,7 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['InvalidLaunchPath'].toString().should.equal("Error: `launch_path` must be a path relative to app's origin");
+    results.errors.InvalidLaunchPath.should.equal("`launch_path` must be a path relative to app's origin");
   });
 
   it('should return a valid launch path', function () {
@@ -78,7 +79,7 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    should.not.exist(results.errors['InvalidLaunchPath']);
+    should.not.exist(results.errors.InvalidLaunchPath);
   });
 
   it('should have an invalid icon size and invalid icon path', function () {
@@ -88,10 +89,9 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['InvalidIconSizeA'].toString().should.equal(
-      'Error: Icon size must be a natural number');
-    results.errors['InvalidIconPathA'].toString().should.equal(
-      'Error: Paths to icons must be absolute paths, relative URIs, or data URIs');
+    results.errors.InvalidIconSizeA.should.equal('Icon size must be a natural number');
+    results.errors.InvalidIconPathA.should.equal(
+      'Paths to icons must be absolute paths, relative URIs, or data URIs');
   });
 
   it('should have a valid icon size and valid icon path', function () {
@@ -101,16 +101,16 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    should.not.exist(results.errors['InvalidIconSize128']);
-    should.not.exist(results.errors['InvalidIconPath128']);
+    should.not.exist(results.errors.InvalidIconSize128);
+    should.not.exist(results.errors.InvalidIconPath128);
   });
 
   it('should have an invalid length if a minLength is provided', function () {
     common.default_locale = '';
 
     var results = m.validate(common);
-    results.errors['InvalidPropertyLengthDefaultLocale'].toString().should.equal(
-      'Error: `default_locale` must be at least 1 in length');
+    results.errors.InvalidPropertyLengthDefaultLocale.should.equal(
+      '`default_locale` must be at least 1 in length');
   });
 
   it('should have a valid length if a minLength is provided', function () {
@@ -118,7 +118,7 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    should.not.exist(results.errors['InvalidPropertyLengthDefaultLocale']);
+    should.not.exist(results.errors.InvalidPropertyLengthDefaultLocale);
   });
 
   it('should have an invalid length if a maxLength is provided', function () {
@@ -126,8 +126,8 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['InvalidPropertyLengthName'].toString().should.equal(
-      'Error: `name` must not exceed length 128');
+    results.errors.InvalidPropertyLengthName.should.equal(
+      '`name` must not exceed length 128');
   });
 
   it('should have a valid length if a maxLength is provided', function () {
@@ -135,7 +135,7 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    should.not.exist(results.errors['InvalidPropertyLengthName']);
+    should.not.exist(results.errors.InvalidPropertyLengthName);
   });
 
   it('should have an invalid developer name if empty', function () {
@@ -144,9 +144,8 @@ describe('validate', function () {
     };
 
     var results = m.validate(common);
-
-    results.errors['InvalidPropertyLengthDeveloperName'].toString().should.equal(
-      'Error: `name` must be at least 1 in length');
+    results.errors.InvalidPropertyLengthDeveloperName.should.equal(
+      '`name` must be at least 1 in length');
   });
 
   it('should have an invalid developer name if not string', function () {
@@ -158,7 +157,7 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['InvalidPropertyTypeDeveloperName'].toString().should.equal('Error: `name` must be of type `string`');
+    results.errors.InvalidPropertyTypeDeveloperName.should.equal('`name` must be of type `string`');
   });
 
   it('should have an invalid developer property if name is missing', function () {
@@ -166,7 +165,7 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['MandatoryFieldDeveloperName'].toString().should.equal('Error: Mandatory field name is missing');
+    results.errors.MandatoryFieldDeveloperName.should.equal('Mandatory field name is missing');
   });
 
   it('should have an invalid developer url error if url invalid', function () {
@@ -175,7 +174,8 @@ describe('validate', function () {
       url: 'foo'
     };
     var results = m.validate(common);
-    results.errors['InvalidDeveloperUrl'].toString().should.equal('Error: Developer URL must be an absolute HTTP or HTTPS URL');
+    results.errors.InvalidDeveloperUrl.should.equal('Developer URL must be an ' +
+      'absolute HTTP or HTTPS URL');
   });
 
   it('should have no error for an unexpected developer property', function () {
@@ -183,6 +183,7 @@ describe('validate', function () {
       name: 'doge',
       yo: 'doge'
     };
+
     (function () {
       var results = m.validate(common);
     }).should.not.throw();
@@ -193,8 +194,7 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['InvalidVersion'].toString().should.equal(
-      'Error: `version` is in an invalid format.');
+    results.errors.InvalidVersion.should.equal('`version` is in an invalid format.');
   });
 
   it('should have a valid version', function () {
@@ -202,7 +202,7 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    should.not.exist(results.errors['InvalidVersion']);
+    should.not.exist(results.errors.InvalidVersion);
   });
 
   it('should have an invalid string type for oneOf', function () {
@@ -210,8 +210,8 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['InvalidStringTypeRole'].toString().should.equal(
-      'Error: `role` must be one of the following: system,input,homescreen');
+    results.errors.InvalidStringTypeRole.should.equal(
+      '`role` must be one of the following: system,input,homescreen');
   });
 
   it('should have a valid string type for oneOf', function () {
@@ -219,7 +219,7 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    should.not.exist(results.errors['InvalidStringTypeRole']);
+    should.not.exist(results.errors.InvalidStringTypeRole);
   });
 
   it('should have an invalid string type for anyOf', function () {
@@ -227,8 +227,8 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['InvalidStringTypeOrientation'].toString().should.equal(
-      'Error: `orientation` must be any of the following: portrait,landscape,' +
+    results.errors.InvalidStringTypeOrientation.should.equal(
+      '`orientation` must be any of the following: portrait,landscape,' +
       'portrait-secondary,landscape-secondary,portrait-primary,landscape-primary');
   });
 
@@ -237,7 +237,7 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    should.not.exist(results.errors['InvalidStringTypeOrientation']);
+    should.not.exist(results.errors.InvalidStringTypeOrientation);
   });
 
   it('should have an invalid default_locale', function () {
@@ -247,8 +247,8 @@ describe('validate', function () {
 
     var results = m.validate(common);
 
-    results.errors['InvalidDefaultLocale'].toString().should.equal(
-      'Error: `default_locale` must match one of the keys in `locales`');
+    results.errors.InvalidDefaultLocale.should.equal(
+      '`default_locale` must match one of the keys in `locales`');
   });
 
   it('should have a valid default_locale', function () {
@@ -267,23 +267,26 @@ describe('validate', function () {
     common.installs_allowed_from = [
       'https://apps.lmorchard.com'
     ];
+
     var results = m.validate(common);
-    should.not.exist(results.errors['InvalidPropertyTypeInstallsAllowedFrom']);
+    should.not.exist(results.errors.InvalidPropertyTypeInstallsAllowedFrom);
   });
 
   it("should be valid when installs_allowed_from contains a wildcard", function () {
     common.installs_allowed_from = [
       '*'
     ];
+
     var results = m.validate(common);
-    should.not.exist(results.errors['InvalidUrlInstallsAllowedFrom']);
+    should.not.exist(results.errors.InvalidUrlInstallsAllowedFrom);
   });
 
   it("should have an invalid type for installs_allowed_from when not an array", function () {
     common.installs_allowed_from = "THIS IS NOT A LIST";
+
     var results = m.validate(common);
-    results.errors['InvalidPropertyTypeInstallsAllowedFrom'].toString().should.equal(
-      'Error: `installs_allowed_from` must be of type `array`');
+    results.errors.InvalidPropertyTypeInstallsAllowedFrom.should.equal(
+      '`installs_allowed_from` must be of type `array`');
   });
 
   it("should have an invalid error for installs_allowed_from when any array item is not a string", function () {
@@ -292,34 +295,38 @@ describe('validate', function () {
         this: 'is not a string'
       }
     ];
+
     var results = m.validate(common);
-    results.errors['InvalidArrayOfStringsInstallsAllowedFrom'].toString().should.equal(
-      'Error: `installs_allowed_from` must be an array of strings');
+    results.errors.InvalidArrayOfStringsInstallsAllowedFrom.should.equal(
+      '`installs_allowed_from` must be an array of strings');
   });
 
   it("should be invalid when installs_allowed_from is present but empty", function () {
     common.installs_allowed_from = [];
+
     var results = m.validate(common);
-    results.errors['InvalidEmptyInstallsAllowedFrom'].toString().should.equal(
-      'Error: `installs_allowed_from` cannot be empty when present');
+    results.errors.InvalidEmptyInstallsAllowedFrom.should.equal(
+      '`installs_allowed_from` cannot be empty when present');
   });
 
   it("should be invalid when installs_allowed_from list contains an invalid URL", function () {
     common.installs_allowed_from = [
       'foo/bar'
     ];
+
     var results = m.validate(common);
-    results.errors['InvalidUrlInstallsAllowedFrom'].toString().should.equal(
-      'Error: `installs_allowed_from` must be a list of valid absolute URLs or `*`');
+    results.errors.InvalidUrlInstallsAllowedFrom.should.equal(
+      '`installs_allowed_from` must be a list of valid absolute URLs or `*`');
   });
 
   it("should be invalid when installs_allowed_from has no marketplace URLs but listed is true", function () {
     common.installs_allowed_from = [
       'https://apps.lmorchard.com'
     ];
+
     var results = m.validate(common, {listed: true});
-    results.errors['InvalidListedRequiresMarketplaceUrlInstallsAllowedFrom'].toString().should.equal(
-      'Error: `installs_allowed_from` must include a Marketplace URL when app is listed');
+    results.errors.InvalidListedRequiresMarketplaceUrlInstallsAllowedFrom.should.equal(
+      '`installs_allowed_from` must include a Marketplace URL when app is listed');
   });
 
   it("should be invalid when installs_allowed_from has no Marketplace URLs, but listed is true", function () {
@@ -328,102 +335,115 @@ describe('validate', function () {
       "https://marketplace.firefox.com",
       'https://apps.lmorchard.com'
     ];
+
     var results = m.validate(common);
-    should.not.exist(results.errors['InvalidListedRequiresMarketplaceUrlInstallsAllowedFrom']);
+    should.not.exist(results.errors.InvalidListedRequiresMarketplaceUrlInstallsAllowedFrom);
   });
 
   it("should be invalid when installs_allowed_from contains a Marketplace URL with http", function () {
     common.installs_allowed_from = [
       "http://marketplace.firefox.com",
     ];
+
     var results = m.validate(common);
-    results.errors['InvalidSecureMarketplaceUrlInstallsAllowedFrom'].toString().should.equal(
-      'Error: `installs_allowed_from` must use https:// when Marketplace URLs are included');
+    results.errors.InvalidSecureMarketplaceUrlInstallsAllowedFrom.should.equal(
+      '`installs_allowed_from` must use https:// when Marketplace URLs are included');
   });
 
   it("should be invalid when screen_size is not an object", function () {
     common.screen_size = 'NOT AN OBJECT';
+
     var results = m.validate(common);
-    results.errors['InvalidPropertyTypeScreenSize'].toString().should.equal(
-      "Error: `screen_size` must be of type `object`");
+    results.errors.InvalidPropertyTypeScreenSize.should.equal(
+      '`screen_size` must be of type `object`');
   });
 
   it("should be invalid when screen_size is an empty object", function () {
     common.screen_size = {};
+
     var results = m.validate(common);
-    results.errors['InvalidEmptyScreenSize'].toString().should.equal(
-      'Error: `screen_size` should have at least min_height or min_width');
+    results.errors.InvalidEmptyScreenSize.should.equal(
+      '`screen_size` should have at least min_height or min_width');
   });
 
   it("should be valid when screen_size.min_width is a number", function () {
     common.screen_size = {
       min_width: '640'
     };
+
     var results = m.validate(common);
-    should.not.exist(results.errors['InvalidNumberScreenSizeMinWidth']);
+    should.not.exist(results.errors.InvalidNumberScreenSizeMinWidth);
   });
 
   it("should be invalid when screen_size.min_width is not a number", function () {
     common.screen_size = {
       min_width: 'NOT A NUMBER'
     };
+
     var results = m.validate(common);
-    results.errors['InvalidNumberScreenSizeMinWidth'].toString().should.equal(
-      "Error: `min_width` must be a number");
+    results.errors.InvalidNumberScreenSizeMinWidth.should.equal(
+      '`min_width` must be a number');
   });
 
   it("should be valid when screen_size.min_height is a number", function () {
     common.screen_size = {
       min_height: '480'
     };
+
     var results = m.validate(common);
-    should.not.exist(results.errors['InvalidNumberScreenSizeMinHeight']);
+    should.not.exist(results.errors.InvalidNumberScreenSizeMinHeight);
   });
 
   it("should be invalid when screen_size.min_height is not a number", function () {
     common.screen_size = {
       min_height: 'NOT A NUMBER'
     };
+
     var results = m.validate(common);
-    results.errors['InvalidNumberScreenSizeMinHeight'].toString().should.equal(
-      "Error: `min_height` must be a number");
+    results.errors.InvalidNumberScreenSizeMinHeight.should.equal(
+      '`min_height` must be a number');
   });
 
   describe('type', function () {
     it('should be valid when type is one of the expected values', function () {
       ['web', 'privileged', 'certified'].forEach(function (type) {
         common.type = type;
+
         var results = m.validate(common);
-        should.not.exist(results.errors['InvalidStringTypeType']);
+        should.not.exist(results.errors.InvalidStringTypeType);
       });
     });
 
     it('should be invalid when type is not one of web, privileged, or certified', function () {
       common.type = 'bonafide';
+
       var results = m.validate(common);
-      results.errors['InvalidStringTypeType'].toString().should.equal(
-        'Error: `type` must be one of the following: web,privileged,certified');
+      results.errors.InvalidStringTypeType.should.equal(
+        '`type` must be one of the following: web,privileged,certified');
     });
 
     it("should be invalid when type is not a string", function () {
       common.type = ['NOT', 'A', 'STRING'];
+
       var results = m.validate(common);
-      results.errors['InvalidPropertyTypeType'].toString().should.equal(
-        'Error: `type` must be of type `string`');
+      results.errors.InvalidPropertyTypeType.should.equal(
+        '`type` must be of type `string`');
     });
 
     it('should be invalid when type is certified but app is listed', function () {
       common.type = 'certified';
+
       var results = m.validate(common, {listed: true});
-      results.errors['InvalidTypeCertifiedListed'].toString().should.equal(
-        'Error: `certified` apps cannot be listed');
+      results.errors.InvalidTypeCertifiedListed.should.equal(
+        '`certified` apps cannot be listed');
     });
 
     it('should be invalid when type is not web but app is not packaged', function () {
       common.type = 'privileged';
+
       var results = m.validate(common, {packaged: false});
-      results.errors['InvalidTypeWebPrivileged'].toString().should.equal(
-        'Error: unpackaged web apps may not have a type of `certified` or `privileged`');
+      results.errors.InvalidTypeWebPrivileged.should.equal(
+        'unpackaged web apps may not have a type of `certified` or `privileged`');
     });
   });
 
@@ -431,23 +451,26 @@ describe('validate', function () {
     it('should be valid when fullscreen is "true" or "false"', function () {
       ['true', 'false'].forEach(function (val) {
         common.fullscreen = val;
+
         var results = m.validate(common);
-        should.not.exist(results.errors['InvalidStringTypeFullscreen']);
+        should.not.exist(results.errors.InvalidStringTypeFullscreen);
       });
     });
 
     it('should be invalid when fullscreen is not "true" or "false"', function () {
       common.fullscreen = 'maybe';
+
       var results = m.validate(common);
-      results.errors['InvalidStringTypeFullscreen'].toString().should.equal(
-        'Error: `fullscreen` must be one of the following: true,false');
+      results.errors.InvalidStringTypeFullscreen.should.equal(
+        '`fullscreen` must be one of the following: true,false');
     });
 
     it('should be invalid when fullscreen is not a string', function () {
       common.fullscreen = ['NOT', 'A', 'STRING'];
+
       var results = m.validate(common);
-      results.errors['InvalidPropertyTypeFullscreen'].toString().should.equal(
-        'Error: `fullscreen` must be of type `string`');
+      results.errors.InvalidPropertyTypeFullscreen.should.equal(
+        '`fullscreen` must be of type `string`');
     });
   });
 
@@ -457,17 +480,19 @@ describe('validate', function () {
         {"to": "asdf", "from": "qwer"},
         {"to": "asdf", "from": "qwer"},
       ];
+
       var results = m.validate(common);
-      should.not.exist(results.errors['InvalidPropertyTypeRedirects']);
-      should.not.exist(results.errors['InvalidItemTypeRedirects']);
-      should.not.exist(results.errors['UnexpectedPropertyRedirects']);
+      should.not.exist(results.errors.InvalidPropertyTypeRedirects);
+      should.not.exist(results.errors.InvalidItemTypeRedirects);
+      should.not.exist(results.errors.UnexpectedPropertyRedirects);
     });
 
     it('should be invalid when redirects is not an array', function () {
       common.redirects = 'NOT AN ARRAY';
+
       var results = m.validate(common);
-      results.errors['InvalidPropertyTypeRedirects'].toString().should.equal(
-        'Error: `redirects` must be of type `array`');
+      results.errors.InvalidPropertyTypeRedirects.should.equal(
+        '`redirects` must be of type `array`');
     });
 
     it('should be invalid when redirects is not an array of objects', function () {
@@ -475,9 +500,10 @@ describe('validate', function () {
         'asdf',
         {"to": "asdf", "from": "qwer"}
       ];
+
       var results = m.validate(common);
-      results.errors['InvalidItemTypeRedirects'].toString().should.equal(
-        'Error: items of array `redirects` must be of type `object`');
+      results.errors.InvalidItemTypeRedirects.should.equal(
+        'items of array `redirects` must be of type `object`');
     });
 
     it('should be invalid when redirects is not an array of objects with string values', function () {
@@ -487,9 +513,10 @@ describe('validate', function () {
           "from": "qwer"
         }
       ];
+
       var results = m.validate(common);
-      results.errors['InvalidPropertyTypeRedirects0To'].toString().should.equal(
-        'Error: `to` must be of type `string`');
+      results.errors.InvalidPropertyTypeRedirects0To.should.equal(
+        '`to` must be of type `string`');
     });
 
     it('should be invalid when redirect items have unexpected properties', function () {
@@ -497,9 +524,10 @@ describe('validate', function () {
           {"bar": "asdf", "foo": "qwer"},
           {"to": "asdf", "from": "qwer"}
       ];
+
       var results = m.validate(common);
-      results.errors['UnexpectedPropertyRedirects0'].toString().should.equal(
-        'Error: Unexpected property `foo` found in `redirects.0`');
+      results.errors.UnexpectedPropertyRedirects0.should.equal(
+        'Unexpected property `foo` found in `redirects.0`');
     });
   });
 
@@ -509,36 +537,40 @@ describe('validate', function () {
         common.chrome = {
           navigation: val
         };
+
         var results = m.validate(common);
-        should.not.exist(results.errors['InvalidPropertyTypeChrome']);
-        should.not.exist(results.errors['InvalidChromeProperties']);
-        should.not.exist(results.errors['UnexpectedPropertyChrome']);
+        should.not.exist(results.errors.InvalidPropertyTypeChrome);
+        should.not.exist(results.errors.InvalidChromeProperties);
+        should.not.exist(results.errors.UnexpectedPropertyChrome);
       });
     });
 
     it('should be invalid when chrome is not an object', function () {
       common.chrome = ['NOT', 'AN', 'OBJECT'];
+
       var results = m.validate(common);
-      results.errors['InvalidPropertyTypeChrome'].toString().should.equal(
-        'Error: `chrome` must be of type `object`');
+      results.errors.InvalidPropertyTypeChrome.should.equal(
+        '`chrome` must be of type `object`');
     });
 
     it('should be invalid when chrome.navigation is not boolean', function () {
       common.chrome = {
         navigation: 'woofwoof'
       };
+
       var results = m.validate(common);
-      results.errors['InvalidPropertyTypeChromeNavigation'].toString().should.equal(
-        'Error: `navigation` must be of type `boolean`');
+      results.errors.InvalidPropertyTypeChromeNavigation.should.equal(
+        '`navigation` must be of type `boolean`');
     });
 
     it('should be invalid when chrome is an object with unexpected properties', function () {
       common.chrome = {
         shiny: true
       };
+
       var results = m.validate(common);
-      results.errors['UnexpectedPropertyChrome'].toString().should.equal(
-        'Error: Unexpected property `shiny` found in `chrome`');
+      results.errors.UnexpectedPropertyChrome.should.equal(
+        'Unexpected property `shiny` found in `chrome`');
     });
   });
 
@@ -547,8 +579,8 @@ describe('validate', function () {
       common.appcache_path = 'http://kittens.com';
 
       var results = m.validate(common, {packaged: true});
-      results.errors['InvalidAppCachePathType'].toString().should.equal(
-        "Error: packaged apps cannot use Appcache. The `appcache_path` field " +
+      results.errors.InvalidAppCachePathType.should.equal(
+        "packaged apps cannot use Appcache. The `appcache_path` field " +
         "should not be provided in a packaged app's manifest")
     });
 
@@ -556,8 +588,8 @@ describe('validate', function () {
       common.appcache_path = '/some/relative/url';
 
       var results = m.validate(common);
-      results.errors['InvalidAppCachePathURL'].toString().should.equal(
-        'Error: The `appcache_path` must be a full, absolute URL to the application ' +
+      results.errors.InvalidAppCachePathURL.should.equal(
+        'The `appcache_path` must be a full, absolute URL to the application ' +
         'cache manifest');
     });
 
@@ -565,8 +597,8 @@ describe('validate', function () {
       common.appcache_path = 'http://kittens.com';
 
       var results = m.validate(common);
-      should.not.exist(results.errors['InvalidAppCachePathURL']);
-      should.not.exist(results.errors['InvalidAppCachePathType']);
+      should.not.exist(results.errors.InvalidAppCachePathURL);
+      should.not.exist(results.errors.InvalidAppCachePathType);
     });
   });
 
@@ -716,8 +748,8 @@ describe('validate', function () {
       common.required_features = 'pew pew pew';
 
       var results = m.validate(common);
-      results.errors['InvalidPropertyTypeRequiredFeatures'].toString().should.equal(
-        'Error: `required_features` must be of type `array`');
+      results.errors.InvalidPropertyTypeRequiredFeatures.should.equal(
+        '`required_features` must be of type `array`');
     });
 
     it('should be invalid when not an array of strings', function () {
@@ -726,15 +758,15 @@ describe('validate', function () {
       ];
 
       var results = m.validate(common);
-      results.errors['InvalidItemTypeRequiredFeatures'].toString().should.equal(
-        'Error: items of array `required_features` must be of type `string`');
+      results.errors.InvalidItemTypeRequiredFeatures.should.equal(
+        'items of array `required_features` must be of type `string`');
     });
 
     it('should be valid when an empty array', function () {
       common.required_features = [];
 
       var results = m.validate(common);
-      should.not.exist(results.errors['InvalidPropertyLengthRequiredFeatures']);
+      should.not.exist(results.errors.InvalidPropertyLengthRequiredFeatures);
     });
   });
 
@@ -743,16 +775,16 @@ describe('validate', function () {
       common.messages = 'pew pew pew';
 
       var results = m.validate(common);
-      results.errors['InvalidPropertyTypeMessages'].toString().should.equal(
-        'Error: `messages` must be of type `array`');
+      results.errors.InvalidPropertyTypeMessages.should.equal(
+        '`messages` must be of type `array`');
     });
 
     it('should be invalid when not an array of objects', function () {
       common.messages = ['THESE', 'ARE', 'NOT', 'OBJECTS'];
 
       var results = m.validate(common);
-      results.errors['InvalidItemTypeMessages'].toString().should.equal(
-        'Error: items of array `messages` must be of type `object`');
+      results.errors.InvalidItemTypeMessages.should.equal(
+        'items of array `messages` must be of type `object`');
     });
 
     it('should be invalid when an item is an object with more than one property', function () {
@@ -763,8 +795,8 @@ describe('validate', function () {
       ];
 
       var results = m.validate(common);
-      results.errors['InvalidMessagesEntry'].toString().should.equal(
-        'Error: objects in array `messages` must each have only one property');
+      results.errors.InvalidMessagesEntry.should.equal(
+        'objects in array `messages` must each have only one property');
     });
   });
 
@@ -774,8 +806,7 @@ describe('validate', function () {
       common.origin = '1';
 
       var results = m.validate(common);
-      results.errors['InvalidOriginFormat'].toString().should.equal(
-        'Error: Origin format is invalid');
+      results.errors.InvalidOriginFormat.should.equal('Origin format is invalid');
     });
 
     it('should be invalid when the app is not privileged', function () {
@@ -783,8 +814,8 @@ describe('validate', function () {
       common.origin = 'app://validurl.com';
 
       var results = m.validate(common);
-      results.errors['InvalidOriginType'].toString().should.equal(
-        'Error: Apps that are not privileged may not use the `origin` field of the manifest');
+      results.errors.InvalidOriginType.should.equal(
+        'Apps that are not privileged may not use the `origin` field of the manifest');
     });
 
     it('should be invalid when the app has an banned origin', function () {
@@ -792,8 +823,8 @@ describe('validate', function () {
       common.origin = 'app://mozilla.org';
 
       var results = m.validate(common, {packaged: true});
-      results.errors['InvalidOriginReference'].toString().should.equal(
-        'Error: App origins may not reference any of the following: ' +
+      results.errors.InvalidOriginReference.should.equal(
+        'App origins may not reference any of the following: ' +
         'gaiamobile.org,mozilla.com,mozilla.org');
     });
 
@@ -802,9 +833,9 @@ describe('validate', function () {
       common.origin = 'app://validurl.com';
 
       var results = m.validate(common, {packaged: true});
-      should.not.exist(results.errors['InvalidOriginFormat']);
-      should.not.exist(results.errors['InvalidOriginType']);
-      should.not.exist(results.errors['InvalidOriginReference']);
+      should.not.exist(results.errors.InvalidOriginFormat);
+      should.not.exist(results.errors.InvalidOriginType);
+      should.not.exist(results.errors.InvalidOriginReference);
     });
   });
 });

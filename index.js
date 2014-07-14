@@ -13,14 +13,7 @@ var BANNED_ORIGINS = [
   'gaiamobile.org',
   'mozilla.com',
   'mozilla.org'
-]
-
-var Warning = function (message) {
-  this.name = 'Warning';
-  this.message = message || '';
-};
-
-Warning.prototype = Error.prototype;
+];
 
 // Stealing some notions from underscore.js
 var ObjProto = Object.prototype;
@@ -62,6 +55,7 @@ var glueObjectPath = function (prefix, parents) {
   var parts = parents.concat(rest).filter(function (item) {
     return item !== '';
   });
+
   return prefix + parts.join('.');
 };
 
@@ -110,7 +104,6 @@ var pathValid = function (path, options) {
     // If there was an error parsing the URL, return False.
     return false;
   }
-
 };
 
 var Manifest = function () {
@@ -179,7 +172,6 @@ var Manifest = function () {
           }
         }
       }
-
     }
   };
 
@@ -197,8 +189,8 @@ var Manifest = function () {
 
     for (var i = 0; i < keys.length; i ++) {
       if (!subject || !subject[keys[i]]) {
-        errors[glueKey('MandatoryField', parents, name, keys[i])] = new Error(
-            'Mandatory field ' + keys[i] + ' is missing');
+        errors[glueKey('MandatoryField', parents, name, keys[i])] = 'Mandatory field ' +
+          keys[i] + ' is missing';
       }
     }
   };
@@ -206,9 +198,8 @@ var Manifest = function () {
   var hasNoUnexpectedKeys = function (subject, schema, name, parents) {
     for (var k in subject) {
       if (!schema.properties.hasOwnProperty(k)) {
-        errors[glueKey('UnexpectedProperty', parents, name)] = new Error(
-            'Unexpected property `' + k + '` found in `' +
-            glueObjectPath('', parents, name) + '`');
+        errors[glueKey('UnexpectedProperty', parents, name)] = 'Unexpected property `' +
+          k + '` found in `' + glueObjectPath('', parents, name) + '`';
       }
     }
   };
@@ -225,15 +216,16 @@ var Manifest = function () {
     } else if (typeof prop !== type) {
       return false;
     }
+
     return true;
   };
 
   var hasValidPropertyType = function (subject, schema, name, parents) {
-      var type = schema.type;
-      if (type && !isValidObjectType(subject, type)) {
-        errors[glueKey('InvalidPropertyType', parents, name)] = new Error(
-            '`' + name + '` must be of type `' + type + '`');
-      }
+    var type = schema.type;
+    if (type && !isValidObjectType(subject, type)) {
+      errors[glueKey('InvalidPropertyType', parents, name)] = '`' + name +
+        '` must be of type `' + type + '`';
+    }
   };
 
   var hasValidItemTypes = function (subject, schema, name, parents) {
@@ -248,28 +240,26 @@ var Manifest = function () {
         var itemSubject = subject[i];
 
         if (!isValidObjectType(itemSubject, type)) {
-          errors[glueKey('InvalidItemType', parents, name)] = new Error(
-              'items of array `' + name + '` must be of type `' + type + '`');
+          errors[glueKey('InvalidItemType', parents, name)] = 'items of array `' +
+            name + '` must be of type `' + type + '`';
         }
 
         if ('[object Object]' === toString.call(itemSubject)) {
-          hasValidSchema(itemSubject, itemSchema,
-                         i, parents.concat([name]));
+          hasValidSchema(itemSubject, itemSchema, i, parents.concat([name]));
         }
-
       }
     }
   };
 
   var hasValidStringItem = function (subject, schema, name, parents) {
     if (schema.oneOf && schema.oneOf.indexOf(subject) === -1) {
-      errors[glueKey('InvalidStringType', parents, name)] = new Error('`' + name +
-             '` must be one of the following: ' + schema.oneOf.toString());
+      errors[glueKey('InvalidStringType', parents, name)] = '`' + name +
+             '` must be one of the following: ' + schema.oneOf.toString();
     } else if (schema.anyOf) {
       subject.split(',').forEach(function (v) {
         if (schema.anyOf.indexOf(v.trim()) === -1) {
-          errors[glueKey('InvalidStringType', parents, name)] = new Error('`' + name +
-             '` must be any of the following: ' + schema.anyOf.toString());
+          errors[glueKey('InvalidStringType', parents, name)] = '`' + name +
+             '` must be any of the following: ' + schema.anyOf.toString();
         }
       });
     }
@@ -277,20 +267,20 @@ var Manifest = function () {
 
   var hasRequiredStringLength = function (subject, schema, name, parents) {
     if (schema.minLength && subject.toString().length < schema.minLength) {
-      errors[glueKey('InvalidPropertyLength', parents, name)] = new Error(
-          '`' + name + '` must be at least ' + schema.minLength + ' in length');
+      errors[glueKey('InvalidPropertyLength', parents, name)] = '`' + name +
+        '` must be at least ' + schema.minLength + ' in length';
     }
+
     if (schema.maxLength && subject.toString().length > schema.maxLength) {
-      errors[glueKey('InvalidPropertyLength', parents, name)] = new Error(
-        '`' + name + '` must not exceed length ' + schema.maxLength);
-    }
+      errors[glueKey('InvalidPropertyLength', parents, name)] = '`' + name +
+        '` must not exceed length ' + schema.maxLength;
   };
 
   var hasValidDeveloperUrl = function () {
     if (self.manifest.developer && self.manifest.developer.url) {
       if (!pathValid(self.manifest.developer.url, {canHaveProtocol: true})) {
-        errors['InvalidDeveloperUrl'] = new Error(
-          'Developer URL must be an absolute HTTP or HTTPS URL');
+        errors.InvalidDeveloperUrl = 'Developer URL must be an absolute HTTP ' +
+          'or HTTPS URL';
       }
     }
   };
@@ -302,8 +292,8 @@ var Manifest = function () {
 
       if (launchPath.length > 0) {
         if (pattern.test(launchPath) === false) {
-          errors['InvalidLaunchPath'] = new Error(
-            "`launch_path` must be a path relative to app's origin");
+          errors.InvalidLaunchPath = "`launch_path` must be a path relative " +
+            "to app's origin";
         }
       }
     }
@@ -317,13 +307,12 @@ var Manifest = function () {
         var key = parseInt(k, 10);
 
         if (isNaN(key) || key < 1) {
-          errors['InvalidIconSize' + camelCase(k)] = new Error(
-            'Icon size must be a natural number');
+          errors['InvalidIconSize' + camelCase(k)] = 'Icon size must be a natural number';
         }
 
         if (!self.manifest.icons[k] || self.manifest.icons[k].length < 1) {
-          errors['InvalidIconPath' + camelCase(k)] = new Error(
-            'Paths to icons must be absolute paths, relative URIs, or data URIs');
+          errors['InvalidIconPath' + camelCase(k)] = 'Paths to icons must be ' +
+            'absolute paths, relative URIs, or data URIs';
         }
       }
     }
@@ -334,18 +323,18 @@ var Manifest = function () {
       var pattern = new RegExp(common.properties.version.pattern);
 
       if (pattern.test(clean(self.manifest.version)) === false) {
-        errors['InvalidVersion'] = new Error('`version` is in an invalid format.');
+        errors.InvalidVersion = '`version` is in an invalid format.';
       }
     }
   };
 
   var hasValidDefaultLocale = function () {
     // only relevant if locales property is not empty
-    var error = new Error('`default_locale` must match one of the keys in `locales`');
+    var error = '`default_locale` must match one of the keys in `locales`';
 
     if (self.manifest.locales) {
       if (!self.manifest.default_locale) {
-        errors['InvalidDefaultLocale'] = error;
+        errors.InvalidDefaultLocale = error;
       } else {
         var languages = [];
 
@@ -354,7 +343,7 @@ var Manifest = function () {
         }
 
         if (languages.indexOf(self.manifest.default_locale) === -1) {
-          errors['InvalidDefaultLocale'] = error;
+          errors.InvalidDefaultLocale = error;
         }
       }
     }
@@ -368,7 +357,7 @@ var Manifest = function () {
     var marketURLs = [];
 
     var invalid = function (subkey, msg) {
-      errors['Invalid' + subkey + 'InstallsAllowedFrom'] = new Error(msg);
+      errors['Invalid' + subkey + 'InstallsAllowedFrom'] = msg;
     };
 
     if (0 === self.manifest.installs_allowed_from.length) {
@@ -381,16 +370,17 @@ var Manifest = function () {
 
       if ('string' !== typeof item) {
         return invalid('ArrayOfStrings',
-            '`installs_allowed_from` must be an array of strings');
+          '`installs_allowed_from` must be an array of strings');
       }
 
       var validPath = pathValid(item, {
         canBeAsterisk: true,
         canHaveProtocol: true
       });
+
       if (!validPath) {
         return invalid('Url',
-            '`installs_allowed_from` must be a list of valid absolute URLs or `*`');
+          '`installs_allowed_from` must be a list of valid absolute URLs or `*`');
       }
 
       if ('*' === item || DEFAULT_WEBAPP_MRKT_URLS.indexOf(item) !== -1) {
@@ -399,7 +389,7 @@ var Manifest = function () {
         var swap_http = item.replace('http://', 'https://');
         if (DEFAULT_WEBAPP_MRKT_URLS.indexOf(swap_http) !== -1) {
           return invalid('SecureMarketplaceUrl',
-              '`installs_allowed_from` must use https:// when Marketplace URLs are included');
+            '`installs_allowed_from` must use https:// when Marketplace URLs are included');
         }
       }
 
@@ -409,7 +399,6 @@ var Manifest = function () {
       return invalid('ListedRequiresMarketplaceUrl',
           '`installs_allowed_from` must include a Marketplace URL when app is listed');
     }
-
   };
 
   var hasValidScreenSize = function () {
@@ -421,8 +410,8 @@ var Manifest = function () {
 
     if (!(screenSize.hasOwnProperty('min_width') ||
           screenSize.hasOwnProperty('min_height'))) {
-      errors['InvalidEmptyScreenSize'] = new Error(
-        '`screen_size` should have at least min_height or min_width');
+      errors.InvalidEmptyScreenSize = '`screen_size` should have at least ' +
+        'min_height or min_width';
       return;
     }
 
@@ -430,8 +419,8 @@ var Manifest = function () {
       var val = screenSize[key];
 
       if (val && !(/^\d+$/.test(val))) {
-        errors['InvalidNumberScreenSize' + camelCase(key)] = new Error(
-          '`'+ key +'` must be a number');
+        errors['InvalidNumberScreenSize' + camelCase(key)] = '`'+ key +
+          '` must be a number';
       }
     };
 
@@ -447,13 +436,12 @@ var Manifest = function () {
     }
 
     if (self.options.listed && 'certified' === self.manifest.type) {
-      errors['InvalidTypeCertifiedListed'] = new Error(
-        '`certified` apps cannot be listed');
+      errors.InvalidTypeCertifiedListed = '`certified` apps cannot be listed';
     }
 
     if (!self.options.packaged && 'web' !== self.manifest.type) {
-      errors['InvalidTypeWebPrivileged'] = new Error(
-        'unpackaged web apps may not have a type of `certified` or `privileged`');
+      errors.InvalidTypeWebPrivileged = 'unpackaged web apps may not have a ' +
+        'type of `certified` or `privileged`';
     }
   };
 
@@ -461,18 +449,14 @@ var Manifest = function () {
     var appcachePath = self.manifest.appcache_path;
 
     if (appcachePath) {
-      if (self.options.packaged) {
-        if (appcachePath) {
-          errors['InvalidAppCachePathType'] = new Error(
-            "packaged apps cannot use Appcache. The `appcache_path` field should " +
-            "not be provided in a packaged app's manifest");
-        }
+      if (self.options.packaged && appcachePath) {
+        errors.InvalidAppCachePathType = "packaged apps cannot use Appcache. " +
+          "The `appcache_path` field should not be provided in a packaged app's manifest";
       }
 
       if (!pathValid(appcachePath, {canHaveProtocol: true})) {
-        errors['InvalidAppCachePathURL'] = new Error(
-          'The `appcache_path` must be a full, absolute URL to the application ' +
-          'cache manifest');
+        errors.InvalidAppCachePathURL = 'The `appcache_path` must be a full, ' +
+          'absolute URL to the application cache manifest';
       }
     }
   };
@@ -482,20 +466,25 @@ var Manifest = function () {
     if (!messages || '[object Array]' !== toString.call(messages)) {
       return;
     }
+
     for (var i = 0; i < messages.length; i++) {
       var item = messages[i];
+
       if ('[object Object]' !== toString.call(item)) {
         continue;
       }
+
       var keyCt = 0;
+
       for (var k in item) {
         if (item.hasOwnProperty(k)) {
           keyCt++;
         }
       }
+
       if (keyCt > 1) {
-        errors['InvalidMessagesEntry'] = new Error(
-          'objects in array `messages` must each have only one property');
+        errors.InvalidMessagesEntry = 'objects in array `messages` must each ' +
+          'have only one property';
       }
     }
   };
@@ -503,17 +492,16 @@ var Manifest = function () {
   var hasValidOrigin = function () {
     if (self.manifest.origin) {
       if (['certified', 'privileged'].indexOf(self.manifest.type) === -1) {
-        errors['InvalidOriginType'] = new Error(
-          'Apps that are not privileged may not use the `origin` field of the manifest');
+        errors.InvalidOriginType = 'Apps that are not privileged may not use ' +
+          'the `origin` field of the manifest';
       } else {
         var pattern = new RegExp(common.properties.origin.pattern);
 
         if (pattern.test(clean(self.manifest.origin)) === false) {
-          errors['InvalidOriginFormat'] = new Error(
-            'Origin format is invalid');
+          errors.InvalidOriginFormat = 'Origin format is invalid';
         } else if (BANNED_ORIGINS.indexOf(self.manifest.origin.split('//')[1]) > -1) {
-          errors['InvalidOriginReference'] = new Error(
-            'App origins may not reference any of the following: ' + BANNED_ORIGINS.join(','));
+          errors.InvalidOriginReference = 'App origins may not reference any ' +
+            'of the following: ' + BANNED_ORIGINS.join(',');
         }
       }
     }
@@ -550,7 +538,6 @@ var Manifest = function () {
   };
 };
 
-module.exports = Warning;
 module.exports = Manifest;
 
 /*
