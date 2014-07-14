@@ -38,6 +38,7 @@ describe('validate', function () {
   it('should return an invalid manifest with missing mandatory keys for non-marketplace', function () {
     content = '{}';
     m.appType = '';
+
     var results = m.validate(content);
 
     ['name', 'description'].forEach(function (f) {
@@ -70,7 +71,6 @@ describe('validate', function () {
     common.launch_path = '//';
 
     var results = m.validate(common);
-
     results.errors.InvalidLaunchPath.should.equal("`launch_path` must be a path relative to app's origin");
   });
 
@@ -78,7 +78,6 @@ describe('validate', function () {
     common.launch_path = '/';
 
     var results = m.validate(common);
-
     should.not.exist(results.errors.InvalidLaunchPath);
   });
 
@@ -140,7 +139,7 @@ describe('validate', function () {
 
   it('should have an invalid developer name if empty', function () {
     common.developer = {
-      'name': ''
+      name: ''
     };
 
     var results = m.validate(common);
@@ -150,7 +149,7 @@ describe('validate', function () {
 
   it('should have an invalid developer name if not string', function () {
     common.developer = {
-      'name': {
+      name: {
         'I have': 'no idea what I am doing'
       }
     };
@@ -193,7 +192,6 @@ describe('validate', function () {
     common.version = 'v1.0!!';
 
     var results = m.validate(common);
-
     results.errors.InvalidVersion.should.equal('`version` is in an invalid format.');
   });
 
@@ -223,7 +221,6 @@ describe('validate', function () {
     common.orientation = 'test';
 
     var results = m.validate(common);
-
     results.errors.InvalidStringTypeOrientation.should.equal(
       '`orientation` must be any of the following: portrait,landscape,' +
       'portrait-secondary,landscape-secondary,portrait-primary,landscape-primary');
@@ -238,7 +235,7 @@ describe('validate', function () {
 
   it('should have an invalid default_locale', function () {
     common.locales = {
-      'es': {}
+      es: {}
     };
 
     var results = m.validate(common);
@@ -248,7 +245,7 @@ describe('validate', function () {
 
   it('should have a valid default_locale', function () {
     common.locales = {
-      'es': {}
+      es: {}
     };
 
     common.default_locale = 'es';
@@ -276,7 +273,7 @@ describe('validate', function () {
   });
 
   it('should have an invalid type for installs_allowed_from when not an array', function () {
-    common.installs_allowed_from = "THIS IS NOT A LIST";
+    common.installs_allowed_from = 'THIS IS NOT A LIST';
 
     var results = m.validate(common);
     results.errors.InvalidPropertyTypeInstallsAllowedFrom.should.equal(
@@ -335,7 +332,7 @@ describe('validate', function () {
 
   it('should be invalid when installs_allowed_from contains a Marketplace URL with http', function () {
     common.installs_allowed_from = [
-      "http://marketplace.firefox.com",
+      "http://marketplace.firefox.com"
     ];
 
     var results = m.validate(common);
@@ -481,8 +478,14 @@ describe('validate', function () {
   describe('redirects', function () {
     it('should be valid when redirects is an array of objects with expected properties', function () {
       common.redirects = [
-        {"to": "asdf", "from": "qwer"},
-        {"to": "asdf", "from": "qwer"},
+        {
+          to: 'asdf',
+          from: 'qwer'
+        },
+        {
+          to: 'asdf',
+          from: 'qwer'
+        }
       ];
 
       var results = m.validate(common);
@@ -500,7 +503,10 @@ describe('validate', function () {
     it('should be invalid when redirects is not an array of objects', function () {
       common.redirects = [
         'asdf',
-        {"to": "asdf", "from": "qwer"}
+        {
+          to: 'asdf',
+          from: 'qwer'
+        }
       ];
 
       var results = m.validate(common);
@@ -511,8 +517,8 @@ describe('validate', function () {
     it('should be invalid when redirects is not an array of objects with string values', function () {
       common.redirects = [
         {
-          "to": ["NOT", "A", "STRING"],
-          "from": "qwer"
+          to: ['NOT', 'A', 'STRING'],
+          from: 'qwer'
         }
       ];
 
@@ -523,8 +529,14 @@ describe('validate', function () {
 
     it('should be invalid when redirect items have unexpected properties', function () {
       common.redirects = [
-          {"bar": "asdf", "foo": "qwer"},
-          {"to": "asdf", "from": "qwer"}
+        {
+          bar: 'asdf',
+          foo: 'qwer'
+        },
+        {
+          to: 'asdf',
+          from: 'qwer'
+        }
       ];
 
       var results = m.validate(common);
@@ -604,25 +616,27 @@ describe('validate', function () {
   describe('inputs', function () {
     it('should be valid with expected content', function () {
       common.inputs = {
-        'input1': {
-          'name': 'Symbols',
-          'description': 'Symbols Virtual Keyboard',
-          'launch_path': '/input1.html',
-          'types': ['text']
+        input: {
+          name: 'Symbols',
+          description: 'Symbols Virtual Keyboard',
+          launch_path: '/input1.html',
+          types: ['text']
         },
-        'siri': {
-          'name': 'Voice Control',
-          'description': 'Voice Control Input',
-          'launch_path': '/vc.html',
-          'types': ['text', 'url']
+        siri: {
+          name: 'Voice Control',
+          description: 'Voice Control Input',
+          launch_path: '/vc.html',
+          types: ['text', 'url']
         }
       };
+
       var results = m.validate(common);
       results.errors.should.be.empty;
     });
 
     it('should be invalid when not an object', function () {
       common.inputs = 'NOT AN OBJECT';
+
       var results = m.validate(common);
       results.errors.InvalidPropertyTypeInputs.should.equal(
         '`inputs` must be of type `object`');
@@ -630,10 +644,11 @@ describe('validate', function () {
 
     it('should be invalid when an entry is not an object', function () {
       common.developer = {
-        'name': 'Frank'
+        name: 'Frank'
       };
+
       common.inputs = {
-        'input1': 'i like turtles'
+        input1: 'i like turtles'
       };
 
       var results = m.validate(common);
@@ -643,12 +658,13 @@ describe('validate', function () {
 
     it('should be invalid when an entry is missing `name`', function () {
       common.inputs = {
-        'input1': {
-          'description': 'Symbols Virtual Keyboard',
-          'launch_path': '/input1.html',
-          'types': ['text']
+        input1: {
+          description: 'Symbols Virtual Keyboard',
+          launch_path: '/input1.html',
+          types: ['text']
         }
       };
+
       var results = m.validate(common);
       results.errors.MandatoryFieldInputsInput1Name.should.equal(
         'Mandatory field name is missing');
@@ -656,12 +672,13 @@ describe('validate', function () {
 
     it('should be invalid when an entry is missing `description`', function () {
       common.inputs = {
-          'input1': {
-            'name': 'Symbols',
-            'launch_path': '/input1.html',
-            'types': ['text']
-          }
+        input1: {
+          name: 'Symbols',
+          launch_path: '/input1.html',
+          types: ['text']
         }
+      };
+
       var results = m.validate(common);
       results.errors.MandatoryFieldInputsInput1Description.should.equal(
         'Mandatory field description is missing');
@@ -669,10 +686,10 @@ describe('validate', function () {
 
     it('should be invalid when an entry is missing `launch_path`', function () {
       common.inputs = {
-        'input1': {
-          'name': 'Symbols',
-          'description': 'Symbols Virtual Keyboard',
-          'types': ['text']
+        input1: {
+          name: 'Symbols',
+          description: 'Symbols Virtual Keyboard',
+          types: ['text']
         }
       };
 
@@ -683,10 +700,10 @@ describe('validate', function () {
 
     it('should be invalid when an entry is missing `types`', function () {
       common.inputs = {
-        'input1': {
-          'name': 'Symbols',
-          'launch_path': '/input1.html',
-          'description': 'Symbols Virtual Keyboard'
+        input1: {
+          name: 'Symbols',
+          launch_path: '/input1.html',
+          description: 'Symbols Virtual Keyboard'
         }
       };
 
@@ -697,11 +714,11 @@ describe('validate', function () {
 
     it('should be invalid when an entry has an incorrect `types` value', function () {
       common.inputs = {
-        'input1': {
-          'name': 'Symbols',
-          'description': 'Symbols Virtual Keyboard',
-          'launch_path': '/input1.html',
-          'types': ['foo']
+        input1: {
+          name: 'Symbols',
+          description: 'Symbols Virtual Keyboard',
+          launch_path: '/input1.html',
+          types: ['foo']
         }
       };
 
@@ -711,15 +728,15 @@ describe('validate', function () {
 
     it('should be valid with valid `locales` object', function () {
       common.inputs = {
-        'input1': {
-          'name': 'Symbols',
-          'description': 'Symbols Virtual Keyboard',
-          'launch_path': '/input1.html',
-          'types': ['text'],
-          'locales': {
-            'es': {
-              'name': 'foo',
-              'description': 'bar'
+        input1: {
+          name: 'Symbols',
+          description: 'Symbols Virtual Keyboard',
+          launch_path: '/input1.html',
+          types: ['text'],
+          locales: {
+            es: {
+              name: 'foo',
+              description: 'bar'
             }
           }
         }
@@ -731,16 +748,16 @@ describe('validate', function () {
 
     it('should be invalid with invalid `locales` object', function () {
       common.inputs = {
-        'input1': {
-          'name': 'Symbols',
-          'description': 'Symbols Virtual Keyboard',
-          'launch_path': '/input1.html',
-          'types': ['text'],
-          'locales': {
-            'es': {
-              'name': 'foo',
-              'description': 'bar',
-              'foo': 'bar2'
+        input1: {
+          name: 'Symbols',
+          description: 'Symbols Virtual Keyboard',
+          launch_path: '/input1.html',
+          types: ['text'],
+          locales: {
+            es: {
+              name: 'foo',
+              description: 'bar',
+              foo: 'bar2'
             }
           }
         }
@@ -763,7 +780,9 @@ describe('validate', function () {
 
     it('should be invalid when not an array of strings', function () {
       common.required_features = [
-        { what: 'i dont even' }
+        {
+          what: 'i dont even'
+        }
       ];
 
       var results = m.validate(common);
@@ -798,9 +817,17 @@ describe('validate', function () {
 
     it('should be invalid when an item is an object with more than one property', function () {
       common.messages = [
-        {'alarm': '/foo.html'},
-        {'this': 'is', 'an': 'invalid', 'entry': 'doh'},
-        {'notification': '/bar.html'}
+        {
+          alarm: '/foo.html'
+        },
+        {
+          this: 'is',
+          an: 'invalid',
+          entry: 'doh'
+        },
+        {
+          notification: '/bar.html'
+        }
       ];
 
       var results = m.validate(common);
