@@ -517,7 +517,7 @@ describe('validate', function () {
       ];
 
       var results = m.validate(common);
-      results.errors.InvalidPropertyTypeRedirects0To.should.equal(
+      results.errors.InvalidPropertyTypeRedirectsItemTo.should.equal(
         '`to` must be of type `string`');
     });
 
@@ -528,7 +528,7 @@ describe('validate', function () {
       ];
 
       var results = m.validate(common);
-      results.errors.UnexpectedPropertyRedirects0.should.equal(
+      results.errors.UnexpectedPropertyRedirectsItem.should.equal(
         'Unexpected property `foo` found in `redirects.0`');
     });
   });
@@ -729,7 +729,7 @@ describe('validate', function () {
       results.errors.should.be.empty;
     });
 
-    it('should be valid with invalid `locales` object', function () {
+    it('should be invalid with invalid `locales` object', function () {
       common.inputs = {
         'input1': {
           'name': 'Symbols',
@@ -845,4 +845,121 @@ describe('validate', function () {
       results.errors.should.be.empty;
     });
   });
+
+  describe('permissions', function () {
+
+    var PERMISSIONS = {
+        'web': [
+            'alarms', 'audio-capture', 'audio-channel-content',
+            'audio-channel-normal', 'desktop-notification', 'fmradio',
+            'geolocation', 'push', 'storage', 'video-capture'
+        ],
+        'privileged': [
+            'audio-channel-alarm', 'audio-channel-notification', 'browser',
+            'contacts', 'device-storage:pictures', 'device-storage:videos',
+            'device-storage:music', 'device-storage:sdcard', 'feature-detection',
+            'input', 'mobilenetwork', 'speaker-control', 'systemXHR', 'tcp-socket'
+        ],
+        'certified': [
+            'attention', 'audio-channel-ringer', 'audio-channel-telephony',
+            'audio-channel-publicnotification', 'background-sensors',
+            'backgroundservice', 'bluetooth', 'camera', 'cellbroadcast',
+            'downloads', 'device-storage:apps', 'embed-apps', 'idle',
+            'mobileconnection', 'network-events', 'networkstats-manage',
+            'open-remote-window', 'permissions', 'phonenumberservice', 'power',
+            'settings', 'sms', 'telephony', 'time', 'voicemail', 'webapps-manage',
+            'wifi-manage', 'wappush'
+        ]
+    };
+
+    var _FULL_PERMISSIONS = ["readonly", "readwrite", "readcreate", "createonly"];
+
+    var PERMISSIONS_ACCESS = {
+        "contacts": _FULL_PERMISSIONS,
+        "device-storage:apps": _FULL_PERMISSIONS,
+        "device-storage:music": _FULL_PERMISSIONS,
+        "device-storage:pictures": _FULL_PERMISSIONS,
+        "device-storage:sdcard": _FULL_PERMISSIONS,
+        "device-storage:videos": _FULL_PERMISSIONS,
+        "settings": ["readonly", "readwrite"],
+    }
+
+    function setPermissions () {
+      common.permissions = {};
+      for (var k in PERMISSIONS) {
+        var set = PERMISSIONS[k];
+        set.forEach(function (perm) {
+          common.permissions[perm] = {
+            'description': 'Required to make things good.'
+          };
+          if (PERMISSIONS_ACCESS.hasOwnProperty(perm)) {
+            common.permissions[perm].access = PERMISSIONS_ACCESS[perm][0];
+          }
+        });
+      }
+    }
+
+    it('should be valid with the full expected set of permissions', function () {
+      setPermissions();
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+    });
+
+    it('should be invalid when not an object', function () {
+      common.permissions = 'LOL';
+      var results = m.validate(common);
+      results.errors.InvalidPropertyTypePermissions.should.equal(
+        '`permissions` must be of type `object`');
+    });
+
+    it('should be invalid when a permission is not an object', function () {
+      setPermissions();
+      common.permissions.alarms = 'LOL';
+      var results = m.validate(common);
+      results.errors.InvalidPropertyTypePermissionsAlarms.should.equal(
+        '`alarms` must be of type `object`');
+    });
+
+    it('should be invalid with an unexpected permission', function () {
+      setPermissions();
+      common.permissions.foo = {'description': 'lol'};
+      var results = m.validate(common);
+      results.errors.UnexpectedPropertyPermissions.should.equal(
+        'Unexpected property `foo` found in `permissions`');
+    });
+
+    it('should be invalid where a permission is missing a description', function () {
+      setPermissions();
+      common.permissions.alarms = {};
+      var results = m.validate(common);
+      results.errors.MandatoryFieldPermissionsAlarmsDescription.should.equal(
+        'Mandatory field description is missing');
+    });
+
+    it('should be invalid where a permission is missing access', function () {
+      setPermissions();
+      delete common.permissions.contacts.access;
+      var results = m.validate(common);
+      results.errors.MandatoryFieldPermissionsContactsAccess.should.equal(
+        'Mandatory field access is missing');
+    });
+
+    it('should be invalid where a permission has an invalid access', function () {
+      setPermissions();
+      common.permissions.contacts.access = 'asdf';
+      var results = m.validate(common);
+      results.errors.InvalidStringTypePermissionsContactsAccess.should.equal(
+        '`access` must be one of the following: readonly,readwrite,readcreate,createonly');
+    });
+
+    it('should be invalid where a permission has an unavailable access', function () {
+      setPermissions();
+      common.permissions.settings.access = 'createonly';
+      var results = m.validate(common);
+      results.errors.InvalidStringTypePermissionsSettingsAccess.should.equal(
+        '`access` must be one of the following: readonly,readwrite');
+    });
+
+  });
+
 });

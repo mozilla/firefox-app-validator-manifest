@@ -42,7 +42,11 @@ var glueKey = function (prefix, parents) {
   var parts = parents.concat(rest).filter(function (item) {
     return item !== '';
   }).map(function (item) {
-    return camelCase(item);
+    if (/^\d+$/.test(item)) {
+      return 'Item';
+    } else {
+      return camelCase(item);
+    }
   });
   return prefix + parts.join('');
 };
@@ -149,28 +153,53 @@ var Manifest = function () {
         hasMandatoryKeys(subject, schema, name, parents);
       }
 
-      if (schema.properties && !schema.additionalProperties) {
-        hasNoUnexpectedKeys(subject, schema, name, parents);
+      // Collect a set of unexpected keys. Will be cleared out as they turn out
+      // to have been expected per schema properties or patternProperties
+      var unexpectedKeys = {};
+      for (var k in subject) {
+        unexpectedKeys[k] = true;
       }
 
       if (schema.properties) {
         for (var k in schema.properties) {
-          if (k in subject) {
+          if (subject.hasOwnProperty(k)) {
+            delete unexpectedKeys[k];
             hasValidSchema(subject[k], schema.properties[k],
                            k, parents.concat([name]));
           }
         }
       }
 
-      if (schema.additionalProperties) {
-        var additional = schema.additionalProperties;
+      if (schema.patternProperties) {
+        for (var k in subject) {
+          for (var pattern in schema.patternProperties) {
+            var patternSchema = schema.patternProperties[pattern];
+            var re = new RegExp(pattern);
+            if (re.test(k)) {
+              delete unexpectedKeys[k];
+              hasValidSchema(subject[k], patternSchema,
+                             k, parents.concat([name]));
+            }
+          }
+        }
+      }
+
+      var additional = schema.additionalProperties;
+      if (additional) {
         for (var k in subject) {
           if (!schema.properties || !schema.properties.hasOwnProperty(k)) {
             hasValidSchema(subject[k], additional,
                            k, parents.concat([name]));
           }
         }
+      } else if (false === additional) {
+        // Now, how about those remaining unexpected keys...
+        for (var k in unexpectedKeys) {
+          errors[glueKey('UnexpectedProperty', parents, name)] = 'Unexpected property `' +
+            k + '` found in `' + glueObjectPath('', parents, name) + '`';
+        }
       }
+
     }
   };
 
@@ -190,15 +219,6 @@ var Manifest = function () {
       if (!subject || !subject[keys[i]]) {
         errors[glueKey('MandatoryField', parents, name, keys[i])] = 'Mandatory field ' +
           keys[i] + ' is missing';
-      }
-    }
-  };
-
-  var hasNoUnexpectedKeys = function (subject, schema, name, parents) {
-    for (var k in subject) {
-      if (!schema.properties.hasOwnProperty(k)) {
-        errors[glueKey('UnexpectedProperty', parents, name)] = 'Unexpected property `' +
-          k + '` found in `' + glueObjectPath('', parents, name) + '`';
       }
     }
   };
