@@ -145,7 +145,6 @@ var Manifest = function () {
     }
 
     if ('[object Object]' === toString.call(subject)) {
-
       if (schema.required) {
         hasMandatoryKeys(subject, schema, name, parents);
       }
@@ -254,12 +253,12 @@ var Manifest = function () {
   var hasValidStringItem = function (subject, schema, name, parents) {
     if (schema.oneOf && schema.oneOf.indexOf(subject) === -1) {
       errors[glueKey('InvalidStringType', parents, name)] = '`' + name +
-             '` must be one of the following: ' + schema.oneOf.toString();
+        '` must be one of the following: ' + schema.oneOf.toString();
     } else if (schema.anyOf) {
       subject.split(',').forEach(function (v) {
         if (schema.anyOf.indexOf(v.trim()) === -1) {
           errors[glueKey('InvalidStringType', parents, name)] = '`' + name +
-             '` must be any of the following: ' + schema.anyOf.toString();
+            '` must be any of the following: ' + schema.anyOf.toString();
         }
       });
     }
@@ -274,6 +273,7 @@ var Manifest = function () {
     if (schema.maxLength && subject.toString().length > schema.maxLength) {
       errors[glueKey('InvalidPropertyLength', parents, name)] = '`' + name +
         '` must not exceed length ' + schema.maxLength;
+    }
   };
 
   var hasValidDeveloperUrl = function () {

@@ -201,15 +201,13 @@ describe('validate', function () {
     common.version = 'v1.0';
 
     var results = m.validate(common);
-
-    should.not.exist(results.errors.InvalidVersion);
+    results.errors.should.be.empty;
   });
 
   it('should have an invalid string type for oneOf', function () {
     common.role = 'test';
 
     var results = m.validate(common);
-
     results.errors.InvalidStringTypeRole.should.equal(
       '`role` must be one of the following: system,input,homescreen');
   });
@@ -218,8 +216,7 @@ describe('validate', function () {
     common.role = 'system';
 
     var results = m.validate(common);
-
-    should.not.exist(results.errors.InvalidStringTypeRole);
+    results.errors.should.be.empty;
   });
 
   it('should have an invalid string type for anyOf', function () {
@@ -236,8 +233,7 @@ describe('validate', function () {
     common.orientation = 'portrait, landscape';
 
     var results = m.validate(common);
-
-    should.not.exist(results.errors.InvalidStringTypeOrientation);
+    results.errors.should.be.empty;
   });
 
   it('should have an invalid default_locale', function () {
@@ -246,7 +242,6 @@ describe('validate', function () {
     };
 
     var results = m.validate(common);
-
     results.errors.InvalidDefaultLocale.should.equal(
       '`default_locale` must match one of the keys in `locales`');
   });
@@ -259,8 +254,7 @@ describe('validate', function () {
     common.default_locale = 'es';
 
     var results = m.validate(common);
-
-    should.not.exist(results.errors['InvalidDefaultLocale']);
+    results.errors.should.be.empty;
   });
 
   it('should be valid when installs_allowed_from is an array', function () {
@@ -269,7 +263,7 @@ describe('validate', function () {
     ];
 
     var results = m.validate(common);
-    should.not.exist(results.errors.InvalidPropertyTypeInstallsAllowedFrom);
+    results.errors.should.be.empty;
   });
 
   it('should be valid when installs_allowed_from contains a wildcard', function () {
@@ -278,7 +272,7 @@ describe('validate', function () {
     ];
 
     var results = m.validate(common);
-    should.not.exist(results.errors.InvalidUrlInstallsAllowedFrom);
+    results.errors.should.be.empty;
   });
 
   it('should have an invalid type for installs_allowed_from when not an array', function () {
@@ -330,14 +324,13 @@ describe('validate', function () {
   });
 
   it('should be invalid when installs_allowed_from has no Marketplace URLs, but listed is true', function () {
-    common.listed = true;
     common.installs_allowed_from = [
-      "https://marketplace.firefox.com",
       'https://apps.lmorchard.com'
     ];
 
-    var results = m.validate(common);
-    should.not.exist(results.errors.InvalidListedRequiresMarketplaceUrlInstallsAllowedFrom);
+    var results = m.validate(common, {listed: true});
+    results.errors.InvalidListedRequiresMarketplaceUrlInstallsAllowedFrom.should.equal(
+      '`installs_allowed_from` must include a Marketplace URL when app is listed');
   });
 
   it('should be invalid when installs_allowed_from contains a Marketplace URL with http', function () {
@@ -372,7 +365,7 @@ describe('validate', function () {
     };
 
     var results = m.validate(common);
-    should.not.exist(results.errors.InvalidNumberScreenSizeMinWidth);
+    results.errors.should.be.empty;
   });
 
   it('should be invalid when screen_size.min_width is not a number', function () {
@@ -391,7 +384,7 @@ describe('validate', function () {
     };
 
     var results = m.validate(common);
-    should.not.exist(results.errors.InvalidNumberScreenSizeMinHeight);
+    results.errors.should.be.empty;
   });
 
   it('should be invalid when screen_size.min_height is not a number', function () {
@@ -406,12 +399,23 @@ describe('validate', function () {
 
   describe('type', function () {
     it('should be valid when type is one of the expected values', function () {
-      ['web', 'privileged', 'certified'].forEach(function (type) {
+      var types = {
+        web: {},
+        privileged: {
+          listed: true,
+          packaged: true
+        },
+        certified: {
+          packaged: true
+        }
+      };
+
+      for(var type in types) {
         common.type = type;
 
-        var results = m.validate(common);
-        should.not.exist(results.errors.InvalidStringTypeType);
-      });
+        var results = m.validate(common, types[type]);
+        results.errors.should.not.exist;
+      }
     });
 
     it('should be invalid when type is not one of web, privileged, or certified', function () {
@@ -453,7 +457,7 @@ describe('validate', function () {
         common.fullscreen = val;
 
         var results = m.validate(common);
-        should.not.exist(results.errors.InvalidStringTypeFullscreen);
+        results.errors.should.be.empty;
       });
     });
 
@@ -482,9 +486,7 @@ describe('validate', function () {
       ];
 
       var results = m.validate(common);
-      should.not.exist(results.errors.InvalidPropertyTypeRedirects);
-      should.not.exist(results.errors.InvalidItemTypeRedirects);
-      should.not.exist(results.errors.UnexpectedPropertyRedirects);
+      results.errors.should.be.empty;
     });
 
     it('should be invalid when redirects is not an array', function () {
@@ -539,9 +541,7 @@ describe('validate', function () {
         };
 
         var results = m.validate(common);
-        should.not.exist(results.errors.InvalidPropertyTypeChrome);
-        should.not.exist(results.errors.InvalidChromeProperties);
-        should.not.exist(results.errors.UnexpectedPropertyChrome);
+        results.errors.should.be.empty;
       });
     });
 
@@ -597,8 +597,7 @@ describe('validate', function () {
       common.appcache_path = 'http://kittens.com';
 
       var results = m.validate(common);
-      should.not.exist(results.errors.InvalidAppCachePathURL);
-      should.not.exist(results.errors.InvalidAppCachePathType);
+      results.errors.should.be.empty;
     });
   });
 
@@ -625,16 +624,21 @@ describe('validate', function () {
     it('should be invalid when not an object', function () {
       common.inputs = 'NOT AN OBJECT';
       var results = m.validate(common);
-      results.errors['InvalidPropertyTypeInputs'].toString().should.equal(
-        'Error: `inputs` must be of type `object`');
+      results.errors.InvalidPropertyTypeInputs.should.equal(
+        '`inputs` must be of type `object`');
     });
 
     it('should be invalid when an entry is not an object', function () {
-      common.developer = { 'name': 'Frank' };
-      common.inputs = { 'input1': 'i like turtles' };
+      common.developer = {
+        'name': 'Frank'
+      };
+      common.inputs = {
+        'input1': 'i like turtles'
+      };
+
       var results = m.validate(common);
-      results.errors['InvalidPropertyTypeInputsInput1'].toString().should.equal(
-        'Error: `input1` must be of type `object`');
+      results.errors.InvalidPropertyTypeInputsInput1.should.equal(
+        '`input1` must be of type `object`');
     });
 
     it('should be invalid when an entry is missing `name`', function () {
@@ -646,8 +650,8 @@ describe('validate', function () {
         }
       };
       var results = m.validate(common);
-      results.errors['MandatoryFieldInputsInput1Name'].toString().should.equal(
-        'Error: Mandatory field name is missing');
+      results.errors.MandatoryFieldInputsInput1Name.should.equal(
+        'Mandatory field name is missing');
     });
 
     it('should be invalid when an entry is missing `description`', function () {
@@ -659,34 +663,36 @@ describe('validate', function () {
           }
         }
       var results = m.validate(common);
-      results.errors['MandatoryFieldInputsInput1Description'].toString().should.equal(
-        'Error: Mandatory field description is missing');
+      results.errors.MandatoryFieldInputsInput1Description.should.equal(
+        'Mandatory field description is missing');
     });
 
     it('should be invalid when an entry is missing `launch_path`', function () {
       common.inputs = {
-          'input1': {
-            'name': 'Symbols',
-            'description': 'Symbols Virtual Keyboard',
-            'types': ['text']
-          }
+        'input1': {
+          'name': 'Symbols',
+          'description': 'Symbols Virtual Keyboard',
+          'types': ['text']
         }
+      };
+
       var results = m.validate(common);
-      results.errors['MandatoryFieldInputsInput1LaunchPath'].toString().should.equal(
-        'Error: Mandatory field launch_path is missing');
+      results.errors.MandatoryFieldInputsInput1LaunchPath.should.equal(
+        'Mandatory field launch_path is missing');
     });
 
     it('should be invalid when an entry is missing `types`', function () {
       common.inputs = {
-          'input1': {
-            'name': 'Symbols',
-            'launch_path': '/input1.html',
-            'description': 'Symbols Virtual Keyboard'
-          }
+        'input1': {
+          'name': 'Symbols',
+          'launch_path': '/input1.html',
+          'description': 'Symbols Virtual Keyboard'
         }
+      };
+
       var results = m.validate(common);
-      results.errors['MandatoryFieldInputsInput1Types'].toString().should.equal(
-        'Error: Mandatory field types is missing');
+      results.errors.MandatoryFieldInputsInput1Types.should.equal(
+        'Mandatory field types is missing');
     });
 
     it('should be invalid when an entry has an incorrect `types` value', function () {
@@ -698,6 +704,7 @@ describe('validate', function () {
           'types': ['foo']
         }
       };
+
       var results = m.validate(common);
       results.errors.should.be.empty;
     });
@@ -717,6 +724,7 @@ describe('validate', function () {
           }
         }
       };
+
       var results = m.validate(common);
       results.errors.should.be.empty;
     });
@@ -737,6 +745,7 @@ describe('validate', function () {
           }
         }
       };
+
       var results = m.validate(common);
       results.errors.should.not.be.empty;
     });
@@ -766,7 +775,7 @@ describe('validate', function () {
       common.required_features = [];
 
       var results = m.validate(common);
-      should.not.exist(results.errors.InvalidPropertyLengthRequiredFeatures);
+      results.errors.should.be.empty;
     });
   });
 
@@ -833,9 +842,7 @@ describe('validate', function () {
       common.origin = 'app://validurl.com';
 
       var results = m.validate(common, {packaged: true});
-      should.not.exist(results.errors.InvalidOriginFormat);
-      should.not.exist(results.errors.InvalidOriginType);
-      should.not.exist(results.errors.InvalidOriginReference);
+      results.errors.should.be.empty;
     });
   });
 });
