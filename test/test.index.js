@@ -263,7 +263,7 @@ describe('validate', function () {
     should.not.exist(results.errors['InvalidDefaultLocale']);
   });
 
-  it("should be valid when installs_allowed_from is an array", function () {
+  it('should be valid when installs_allowed_from is an array', function () {
     common.installs_allowed_from = [
       'https://apps.lmorchard.com'
     ];
@@ -272,7 +272,7 @@ describe('validate', function () {
     should.not.exist(results.errors.InvalidPropertyTypeInstallsAllowedFrom);
   });
 
-  it("should be valid when installs_allowed_from contains a wildcard", function () {
+  it('should be valid when installs_allowed_from contains a wildcard', function () {
     common.installs_allowed_from = [
       '*'
     ];
@@ -281,7 +281,7 @@ describe('validate', function () {
     should.not.exist(results.errors.InvalidUrlInstallsAllowedFrom);
   });
 
-  it("should have an invalid type for installs_allowed_from when not an array", function () {
+  it('should have an invalid type for installs_allowed_from when not an array', function () {
     common.installs_allowed_from = "THIS IS NOT A LIST";
 
     var results = m.validate(common);
@@ -289,7 +289,7 @@ describe('validate', function () {
       '`installs_allowed_from` must be of type `array`');
   });
 
-  it("should have an invalid error for installs_allowed_from when any array item is not a string", function () {
+  it('should have an invalid error for installs_allowed_from when any array item is not a string', function () {
     common.installs_allowed_from = [
       {
         this: 'is not a string'
@@ -301,7 +301,7 @@ describe('validate', function () {
       '`installs_allowed_from` must be an array of strings');
   });
 
-  it("should be invalid when installs_allowed_from is present but empty", function () {
+  it('should be invalid when installs_allowed_from is present but empty', function () {
     common.installs_allowed_from = [];
 
     var results = m.validate(common);
@@ -309,7 +309,7 @@ describe('validate', function () {
       '`installs_allowed_from` cannot be empty when present');
   });
 
-  it("should be invalid when installs_allowed_from list contains an invalid URL", function () {
+  it('should be invalid when installs_allowed_from list contains an invalid URL', function () {
     common.installs_allowed_from = [
       'foo/bar'
     ];
@@ -319,7 +319,7 @@ describe('validate', function () {
       '`installs_allowed_from` must be a list of valid absolute URLs or `*`');
   });
 
-  it("should be invalid when installs_allowed_from has no marketplace URLs but listed is true", function () {
+  it('should be invalid when installs_allowed_from has no marketplace URLs but listed is true', function () {
     common.installs_allowed_from = [
       'https://apps.lmorchard.com'
     ];
@@ -329,7 +329,7 @@ describe('validate', function () {
       '`installs_allowed_from` must include a Marketplace URL when app is listed');
   });
 
-  it("should be invalid when installs_allowed_from has no Marketplace URLs, but listed is true", function () {
+  it('should be invalid when installs_allowed_from has no Marketplace URLs, but listed is true', function () {
     common.listed = true;
     common.installs_allowed_from = [
       "https://marketplace.firefox.com",
@@ -340,7 +340,7 @@ describe('validate', function () {
     should.not.exist(results.errors.InvalidListedRequiresMarketplaceUrlInstallsAllowedFrom);
   });
 
-  it("should be invalid when installs_allowed_from contains a Marketplace URL with http", function () {
+  it('should be invalid when installs_allowed_from contains a Marketplace URL with http', function () {
     common.installs_allowed_from = [
       "http://marketplace.firefox.com",
     ];
@@ -350,7 +350,7 @@ describe('validate', function () {
       '`installs_allowed_from` must use https:// when Marketplace URLs are included');
   });
 
-  it("should be invalid when screen_size is not an object", function () {
+  it('should be invalid when screen_size is not an object', function () {
     common.screen_size = 'NOT AN OBJECT';
 
     var results = m.validate(common);
@@ -358,7 +358,7 @@ describe('validate', function () {
       '`screen_size` must be of type `object`');
   });
 
-  it("should be invalid when screen_size is an empty object", function () {
+  it('should be invalid when screen_size is an empty object', function () {
     common.screen_size = {};
 
     var results = m.validate(common);
@@ -366,7 +366,7 @@ describe('validate', function () {
       '`screen_size` should have at least min_height or min_width');
   });
 
-  it("should be valid when screen_size.min_width is a number", function () {
+  it('should be valid when screen_size.min_width is a number', function () {
     common.screen_size = {
       min_width: '640'
     };
@@ -375,7 +375,7 @@ describe('validate', function () {
     should.not.exist(results.errors.InvalidNumberScreenSizeMinWidth);
   });
 
-  it("should be invalid when screen_size.min_width is not a number", function () {
+  it('should be invalid when screen_size.min_width is not a number', function () {
     common.screen_size = {
       min_width: 'NOT A NUMBER'
     };
@@ -385,7 +385,7 @@ describe('validate', function () {
       '`min_width` must be a number');
   });
 
-  it("should be valid when screen_size.min_height is a number", function () {
+  it('should be valid when screen_size.min_height is a number', function () {
     common.screen_size = {
       min_height: '480'
     };
@@ -394,7 +394,7 @@ describe('validate', function () {
     should.not.exist(results.errors.InvalidNumberScreenSizeMinHeight);
   });
 
-  it("should be invalid when screen_size.min_height is not a number", function () {
+  it('should be invalid when screen_size.min_height is not a number', function () {
     common.screen_size = {
       min_height: 'NOT A NUMBER'
     };
@@ -422,7 +422,7 @@ describe('validate', function () {
         '`type` must be one of the following: web,privileged,certified');
     });
 
-    it("should be invalid when type is not a string", function () {
+    it('should be invalid when type is not a string', function () {
       common.type = ['NOT', 'A', 'STRING'];
 
       var results = m.validate(common);
