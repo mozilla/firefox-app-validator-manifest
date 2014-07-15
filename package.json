@@ -16,9 +16,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/ednapiranha/node-firefox-app-validator-manifest.git"
+    "url": "git://github.com/mozilla/node-firefox-app-validator-manifest.git"
   },
-  "keywords": [],
-  "author": "Edna Piranha <jen@ednapiranha.com> (http://ednapiranha.com)",
+  "keywords": [
+    "firefox", "firefox marketplace", "firefoxos", "firefox os", "manifest"
+  ],
+  "contributors": [
+    "Jen Fong-Adwent <jen@meatspac.es (http://github.com/ednapiranha)",
+    "Les Orchard <me@lmorchard.com (http://github.com/lmorchard)"
+  ],
   "license": "MPL-2.0"
 }
