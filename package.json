@@ -22,8 +22,8 @@
     "firefox", "firefox marketplace", "firefoxos", "firefox os", "manifest"
   ],
   "contributors": [
-    "Jen Fong-Adwent <jen@meatspac.es (http://github.com/ednapiranha)",
-    "Les Orchard <me@lmorchard.com (http://github.com/lmorchard)"
+    "Jen Fong-Adwent <jen@meatspac.es> (http://github.com/ednapiranha)",
+    "Les Orchard <me@lmorchard.com> (http://github.com/lmorchard)"
   ],
   "license": "MPL-2.0"
 }
