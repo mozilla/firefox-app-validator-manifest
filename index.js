@@ -572,7 +572,6 @@ module.exports = Manifest;
 Actual rules here https://github.com/mozilla/app-validator/blob/master/appvalidator/specs/webapps.py
 
 var RULES = {
-  "disallowed_nodes": ["widget"],
   "child_nodes": {
     "activities": {
         "expected_type": "object",
