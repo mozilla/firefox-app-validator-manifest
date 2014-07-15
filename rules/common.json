@@ -206,5 +206,6 @@
     "dependencies": {
         "default_locale": ["locales"]
     },
-    "required": ["description", "name"]
+    "required": ["description", "name"],
+    "additionalProperties": false
 }

@@ -22,6 +22,13 @@ describe('validate', function () {
       'format or has invalid properties');
   });
 
+  it('should return an invalid manifest property if `widgets` is included', function () {
+    common.widgets = {};
+
+    var results = m.validate(common);
+    results.warnings.UnexpectedProperty.should.equal('Unexpected property `widgets` found in ``');
+  });
+
   it('should return an invalid manifest with missing mandatory keys for the marketplace', function () {
     var results = m.validate({});
 
@@ -525,7 +532,7 @@ describe('validate', function () {
       ];
 
       var results = m.validate(common);
-      results.errors.UnexpectedPropertyRedirectsItem.should.equal(
+      results.warnings.UnexpectedPropertyRedirectsItem.should.equal(
         'Unexpected property `foo` found in `redirects.0`');
     });
   });
@@ -566,7 +573,7 @@ describe('validate', function () {
       };
 
       var results = m.validate(common);
-      results.errors.UnexpectedPropertyChrome.should.equal(
+      results.warnings.UnexpectedPropertyChrome.should.equal(
         'Unexpected property `shiny` found in `chrome`');
     });
   });
@@ -749,7 +756,7 @@ describe('validate', function () {
       };
 
       var results = m.validate(common);
-      results.errors.should.not.be.empty;
+      results.warnings.should.not.be.empty;
     });
 
   });
@@ -944,7 +951,7 @@ describe('validate', function () {
       };
 
       var results = m.validate(common);
-      results.errors.UnexpectedPropertyPermissions.should.equal(
+      results.warnings.UnexpectedPropertyPermissions.should.equal(
         'Unexpected property `foo` found in `permissions`');
     });
 

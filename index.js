@@ -130,7 +130,8 @@ var Manifest = function () {
       }
     } catch (err) {
       validJSON = false;
-      errors['InvalidJSON'] = 'Manifest is not in a valid JSON format or has invalid properties';
+      errors['InvalidJSON'] = 'Manifest is not in a valid JSON format or has ' +
+        'invalid properties';
     }
 
     return validJSON;
@@ -200,7 +201,7 @@ var Manifest = function () {
       } else if (false === additional) {
         // Now, how about those remaining unexpected keys...
         for (var k in unexpectedKeys) {
-          errors[glueKey('UnexpectedProperty', parents, name)] = 'Unexpected property `' +
+          warnings[glueKey('UnexpectedProperty', parents, name)] = 'Unexpected property `' +
             k + '` found in `' + glueObjectPath('', parents, name) + '`';
         }
       }
