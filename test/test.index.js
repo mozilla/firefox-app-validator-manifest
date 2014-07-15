@@ -51,339 +51,359 @@ describe('validate', function () {
     });
   });
 
-  it('should return an invalid property type', function () {
-    common.launch_path = [];
+  describe('launch_path', function () {
+    it('should return an invalid property type', function () {
+      common.launch_path = [];
 
-    var results = m.validate(common);
-    results.errors.InvalidPropertyTypeLaunchPath.should.equal(
-      "`launch_path` must be of type `string`");
-  });
-
-  it('should return an invalid launch path', function () {
-    common.launch_path = '//';
-
-    var results = m.validate(common);
-    results.errors.InvalidLaunchPath.should.equal("`launch_path` must be a path relative to app's origin");
-  });
-
-  it('should return a valid launch path', function () {
-    common.launch_path = '/';
-
-    var results = m.validate(common);
-    should.not.exist(results.errors.InvalidLaunchPath);
-  });
-
-  it('should have an invalid icon size and invalid icon path', function () {
-    common.icons = {
-      a: ''
-    };
-
-    var results = m.validate(common);
-
-    results.errors.InvalidIconSizeA.should.equal('Icon size must be a natural number');
-    results.errors.InvalidIconPathA.should.equal(
-      'Paths to icons must be absolute paths, relative URIs, or data URIs');
-  });
-
-  it('should have a valid icon size and valid icon path', function () {
-    common.icons = {
-      '128': '/path/to/icon.png'
-    };
-
-    var results = m.validate(common);
-
-    should.not.exist(results.errors.InvalidIconSize128);
-    should.not.exist(results.errors.InvalidIconPath128);
-  });
-
-  it('should have an invalid length if a minLength is provided', function () {
-    common.default_locale = '';
-
-    var results = m.validate(common);
-    results.errors.InvalidPropertyLengthDefaultLocale.should.equal(
-      '`default_locale` must be at least 1 in length');
-  });
-
-  it('should have a valid length if a minLength is provided', function () {
-    common.default_locale = 'en';
-
-    var results = m.validate(common);
-
-    should.not.exist(results.errors.InvalidPropertyLengthDefaultLocale);
-  });
-
-  it('should have an invalid length if a maxLength is provided', function () {
-    common.name = Array(130).join('x');
-
-    var results = m.validate(common);
-
-    results.errors.InvalidPropertyLengthName.should.equal(
-      '`name` must not exceed length 128');
-  });
-
-  it('should have a valid length if a maxLength is provided', function () {
-    common.name = 'my app';
-
-    var results = m.validate(common);
-
-    should.not.exist(results.errors.InvalidPropertyLengthName);
-  });
-
-  it('should have an invalid developer name if empty', function () {
-    common.developer = {
-      name: ''
-    };
-
-    var results = m.validate(common);
-    results.errors.InvalidPropertyLengthDeveloperName.should.equal(
-      '`name` must be at least 1 in length');
-  });
-
-  it('should have an invalid developer name if not string', function () {
-    common.developer = {
-      name: {
-        'I have': 'no idea what I am doing'
-      }
-    };
-
-    var results = m.validate(common);
-
-    results.errors.InvalidPropertyTypeDeveloperName.should.equal('`name` must be of type `string`');
-  });
-
-  it('should have an invalid developer property if name is missing', function () {
-    common.developer = {};
-
-    var results = m.validate(common);
-
-    results.errors.MandatoryFieldDeveloperName.should.equal('Mandatory field name is missing');
-  });
-
-  it('should have an invalid developer url error if url invalid', function () {
-    common.developer = {
-      name: 'Doge',
-      url: 'foo'
-    };
-    var results = m.validate(common);
-    results.errors.InvalidDeveloperUrl.should.equal('Developer URL must be an ' +
-      'absolute HTTP or HTTPS URL');
-  });
-
-  it('should have no error for an unexpected developer property', function () {
-    common.developer = {
-      name: 'doge',
-      yo: 'doge'
-    };
-
-    (function () {
       var results = m.validate(common);
-    }).should.not.throw();
+      results.errors.InvalidPropertyTypeLaunchPath.should.equal(
+        "`launch_path` must be of type `string`");
+    });
+
+    it('should return an invalid launch path', function () {
+      common.launch_path = '//';
+
+      var results = m.validate(common);
+      results.errors.InvalidLaunchPath.should.equal("`launch_path` must be a path relative to app's origin");
+    });
+
+    it('should return a valid launch path', function () {
+      common.launch_path = '/';
+
+      var results = m.validate(common);
+      should.not.exist(results.errors.InvalidLaunchPath);
+    });
   });
 
-  it('should have an invalid version', function () {
-    common.version = 'v1.0!!';
+  describe('icons', function () {
+    it('should have an invalid icon size and invalid icon path', function () {
+      common.icons = {
+        a: ''
+      };
 
-    var results = m.validate(common);
-    results.errors.InvalidVersion.should.equal('`version` is in an invalid format.');
+      var results = m.validate(common);
+
+      results.errors.InvalidIconSizeA.should.equal('Icon size must be a natural number');
+      results.errors.InvalidIconPathA.should.equal(
+        'Paths to icons must be absolute paths, relative URIs, or data URIs');
+    });
+
+    it('should have a valid icon size and valid icon path', function () {
+      common.icons = {
+        '128': '/path/to/icon.png'
+      };
+
+      var results = m.validate(common);
+
+      should.not.exist(results.errors.InvalidIconSize128);
+      should.not.exist(results.errors.InvalidIconPath128);
+    });
   });
 
-  it('should have a valid version', function () {
-    common.version = 'v1.0';
+  describe('default_locale', function () {
+    it('should have an invalid length if a minLength is provided', function () {
+      common.default_locale = '';
 
-    var results = m.validate(common);
-    results.errors.should.be.empty;
+      var results = m.validate(common);
+      results.errors.InvalidPropertyLengthDefaultLocale.should.equal(
+        '`default_locale` must be at least 1 in length');
+    });
+
+    it('should have a valid length if a minLength is provided', function () {
+      common.default_locale = 'en';
+
+      var results = m.validate(common);
+
+      should.not.exist(results.errors.InvalidPropertyLengthDefaultLocale);
+    });
+
+    it('should have an invalid default_locale', function () {
+      common.locales = {
+        es: {}
+      };
+
+      var results = m.validate(common);
+      results.errors.InvalidDefaultLocale.should.equal(
+        '`default_locale` must match one of the keys in `locales`');
+    });
+
+    it('should have a valid default_locale', function () {
+      common.locales = {
+        es: {}
+      };
+
+      common.default_locale = 'es';
+
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+    });
   });
 
-  it('should have an invalid string type for oneOf', function () {
-    common.role = 'test';
+  describe('name', function () {
+    it('should have an invalid length if a maxLength is provided', function () {
+      common.name = Array(130).join('x');
 
-    var results = m.validate(common);
-    results.errors.InvalidStringTypeRole.should.equal(
-      '`role` must be one of the following: system,input,homescreen');
+      var results = m.validate(common);
+
+      results.errors.InvalidPropertyLengthName.should.equal(
+        '`name` must not exceed length 128');
+    });
+
+    it('should have a valid length if a maxLength is provided', function () {
+      common.name = 'my app';
+
+      var results = m.validate(common);
+
+      should.not.exist(results.errors.InvalidPropertyLengthName);
+    });
   });
 
-  it('should have a valid string type for oneOf', function () {
-    common.role = 'system';
+  describe('developer', function () {
+    it('should have an invalid developer name if empty', function () {
+      common.developer = {
+        name: ''
+      };
 
-    var results = m.validate(common);
-    results.errors.should.be.empty;
+      var results = m.validate(common);
+      results.errors.InvalidPropertyLengthDeveloperName.should.equal(
+        '`name` must be at least 1 in length');
+    });
+
+    it('should have an invalid developer name if not string', function () {
+      common.developer = {
+        name: {
+          'I have': 'no idea what I am doing'
+        }
+      };
+
+      var results = m.validate(common);
+
+      results.errors.InvalidPropertyTypeDeveloperName.should.equal('`name` must be of type `string`');
+    });
+
+    it('should have an invalid developer property if name is missing', function () {
+      common.developer = {};
+
+      var results = m.validate(common);
+
+      results.errors.MandatoryFieldDeveloperName.should.equal('Mandatory field name is missing');
+    });
+
+    it('should have an invalid developer url error if url invalid', function () {
+      common.developer = {
+        name: 'Doge',
+        url: 'foo'
+      };
+      var results = m.validate(common);
+      results.errors.InvalidDeveloperUrl.should.equal('Developer URL must be an ' +
+        'absolute HTTP or HTTPS URL');
+    });
+
+    it('should have no error for an unexpected developer property', function () {
+      common.developer = {
+        name: 'doge',
+        yo: 'doge'
+      };
+
+      (function () {
+        var results = m.validate(common);
+      }).should.not.throw();
+    });
   });
 
-  it('should have an invalid string type for anyOf', function () {
-    common.orientation = 'test';
+  describe('version', function () {
+    it('should have an invalid version', function () {
+      common.version = 'v1.0!!';
 
-    var results = m.validate(common);
-    results.errors.InvalidStringTypeOrientation.should.equal(
-      '`orientation` must be any of the following: portrait,landscape,' +
-      'portrait-secondary,landscape-secondary,portrait-primary,landscape-primary');
+      var results = m.validate(common);
+      results.errors.InvalidVersion.should.equal('`version` is in an invalid format.');
+    });
+
+    it('should have a valid version', function () {
+      common.version = 'v1.0';
+
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+    });
   });
 
-  it('should have a valid string type for anyOf', function () {
-    common.orientation = 'portrait, landscape';
+  describe('role', function () {
+    it('should have an invalid string type for oneOf', function () {
+      common.role = 'test';
 
-    var results = m.validate(common);
-    results.errors.should.be.empty;
+      var results = m.validate(common);
+      results.errors.InvalidStringTypeRole.should.equal(
+        '`role` must be one of the following: system,input,homescreen');
+    });
+
+    it('should have a valid string type for oneOf', function () {
+      common.role = 'system';
+
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+    });
   });
 
-  it('should have an invalid default_locale', function () {
-    common.locales = {
-      es: {}
-    };
+  describe('orientation', function () {
+    it('should have an invalid string type for anyOf', function () {
+      common.orientation = 'test';
 
-    var results = m.validate(common);
-    results.errors.InvalidDefaultLocale.should.equal(
-      '`default_locale` must match one of the keys in `locales`');
+      var results = m.validate(common);
+      results.errors.InvalidStringTypeOrientation.should.equal(
+        '`orientation` must be any of the following: portrait,landscape,' +
+        'portrait-secondary,landscape-secondary,portrait-primary,landscape-primary');
+    });
+
+    it('should have a valid string type for anyOf', function () {
+      common.orientation = 'portrait, landscape';
+
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+    });
   });
 
-  it('should have a valid default_locale', function () {
-    common.locales = {
-      es: {}
-    };
+  describe('installs_allowed_from', function () {
+    it('should be valid when installs_allowed_from is an array', function () {
+      common.installs_allowed_from = [
+        'https://apps.lmorchard.com'
+      ];
 
-    common.default_locale = 'es';
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+    });
 
-    var results = m.validate(common);
-    results.errors.should.be.empty;
+    it('should be valid when installs_allowed_from contains a wildcard', function () {
+      common.installs_allowed_from = [
+        '*'
+      ];
+
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+    });
+
+    it('should have an invalid type for installs_allowed_from when not an array', function () {
+      common.installs_allowed_from = 'THIS IS NOT A LIST';
+
+      var results = m.validate(common);
+      results.errors.InvalidPropertyTypeInstallsAllowedFrom.should.equal(
+        '`installs_allowed_from` must be of type `array`');
+    });
+
+    it('should have an invalid error for installs_allowed_from when any array item is not a string', function () {
+      common.installs_allowed_from = [
+        {
+          this: 'is not a string'
+        }
+      ];
+
+      var results = m.validate(common);
+      results.errors.InvalidArrayOfStringsInstallsAllowedFrom.should.equal(
+        '`installs_allowed_from` must be an array of strings');
+    });
+
+    it('should be invalid when installs_allowed_from is present but empty', function () {
+      common.installs_allowed_from = [];
+
+      var results = m.validate(common);
+      results.errors.InvalidEmptyInstallsAllowedFrom.should.equal(
+        '`installs_allowed_from` cannot be empty when present');
+    });
+
+    it('should be invalid when installs_allowed_from list contains an invalid URL', function () {
+      common.installs_allowed_from = [
+        'foo/bar'
+      ];
+
+      var results = m.validate(common);
+      results.errors.InvalidUrlInstallsAllowedFrom.should.equal(
+        '`installs_allowed_from` must be a list of valid absolute URLs or `*`');
+    });
+
+    it('should be invalid when installs_allowed_from has no marketplace URLs but listed is true', function () {
+      common.installs_allowed_from = [
+        'https://apps.lmorchard.com'
+      ];
+
+      var results = m.validate(common, {listed: true});
+      results.errors.InvalidListedRequiresMarketplaceUrlInstallsAllowedFrom.should.equal(
+        '`installs_allowed_from` must include a Marketplace URL when app is listed');
+    });
+
+    it('should be invalid when installs_allowed_from has no Marketplace URLs, but listed is true', function () {
+      common.installs_allowed_from = [
+        'https://apps.lmorchard.com'
+      ];
+
+      var results = m.validate(common, {listed: true});
+      results.errors.InvalidListedRequiresMarketplaceUrlInstallsAllowedFrom.should.equal(
+        '`installs_allowed_from` must include a Marketplace URL when app is listed');
+    });
+
+    it('should be invalid when installs_allowed_from contains a Marketplace URL with http', function () {
+      common.installs_allowed_from = [
+        "http://marketplace.firefox.com"
+      ];
+
+      var results = m.validate(common);
+      results.errors.InvalidSecureMarketplaceUrlInstallsAllowedFrom.should.equal(
+        '`installs_allowed_from` must use https:// when Marketplace URLs are included');
+    });
   });
 
-  it('should be valid when installs_allowed_from is an array', function () {
-    common.installs_allowed_from = [
-      'https://apps.lmorchard.com'
-    ];
+  describe('screen_size', function () {
+    it('should be invalid when screen_size is not an object', function () {
+      common.screen_size = 'NOT AN OBJECT';
 
-    var results = m.validate(common);
-    results.errors.should.be.empty;
-  });
+      var results = m.validate(common);
+      results.errors.InvalidPropertyTypeScreenSize.should.equal(
+        '`screen_size` must be of type `object`');
+    });
 
-  it('should be valid when installs_allowed_from contains a wildcard', function () {
-    common.installs_allowed_from = [
-      '*'
-    ];
+    it('should be invalid when screen_size is an empty object', function () {
+      common.screen_size = {};
 
-    var results = m.validate(common);
-    results.errors.should.be.empty;
-  });
+      var results = m.validate(common);
+      results.errors.InvalidEmptyScreenSize.should.equal(
+        '`screen_size` should have at least min_height or min_width');
+    });
 
-  it('should have an invalid type for installs_allowed_from when not an array', function () {
-    common.installs_allowed_from = 'THIS IS NOT A LIST';
+    it('should be valid when screen_size.min_width is a number', function () {
+      common.screen_size = {
+        min_width: '640'
+      };
 
-    var results = m.validate(common);
-    results.errors.InvalidPropertyTypeInstallsAllowedFrom.should.equal(
-      '`installs_allowed_from` must be of type `array`');
-  });
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+    });
 
-  it('should have an invalid error for installs_allowed_from when any array item is not a string', function () {
-    common.installs_allowed_from = [
-      {
-        this: 'is not a string'
-      }
-    ];
+    it('should be invalid when screen_size.min_width is not a number', function () {
+      common.screen_size = {
+        min_width: 'NOT A NUMBER'
+      };
 
-    var results = m.validate(common);
-    results.errors.InvalidArrayOfStringsInstallsAllowedFrom.should.equal(
-      '`installs_allowed_from` must be an array of strings');
-  });
+      var results = m.validate(common);
+      results.errors.InvalidNumberScreenSizeMinWidth.should.equal(
+        '`min_width` must be a number');
+    });
 
-  it('should be invalid when installs_allowed_from is present but empty', function () {
-    common.installs_allowed_from = [];
+    it('should be valid when screen_size.min_height is a number', function () {
+      common.screen_size = {
+        min_height: '480'
+      };
 
-    var results = m.validate(common);
-    results.errors.InvalidEmptyInstallsAllowedFrom.should.equal(
-      '`installs_allowed_from` cannot be empty when present');
-  });
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+    });
 
-  it('should be invalid when installs_allowed_from list contains an invalid URL', function () {
-    common.installs_allowed_from = [
-      'foo/bar'
-    ];
+    it('should be invalid when screen_size.min_height is not a number', function () {
+      common.screen_size = {
+        min_height: 'NOT A NUMBER'
+      };
 
-    var results = m.validate(common);
-    results.errors.InvalidUrlInstallsAllowedFrom.should.equal(
-      '`installs_allowed_from` must be a list of valid absolute URLs or `*`');
-  });
-
-  it('should be invalid when installs_allowed_from has no marketplace URLs but listed is true', function () {
-    common.installs_allowed_from = [
-      'https://apps.lmorchard.com'
-    ];
-
-    var results = m.validate(common, {listed: true});
-    results.errors.InvalidListedRequiresMarketplaceUrlInstallsAllowedFrom.should.equal(
-      '`installs_allowed_from` must include a Marketplace URL when app is listed');
-  });
-
-  it('should be invalid when installs_allowed_from has no Marketplace URLs, but listed is true', function () {
-    common.installs_allowed_from = [
-      'https://apps.lmorchard.com'
-    ];
-
-    var results = m.validate(common, {listed: true});
-    results.errors.InvalidListedRequiresMarketplaceUrlInstallsAllowedFrom.should.equal(
-      '`installs_allowed_from` must include a Marketplace URL when app is listed');
-  });
-
-  it('should be invalid when installs_allowed_from contains a Marketplace URL with http', function () {
-    common.installs_allowed_from = [
-      "http://marketplace.firefox.com"
-    ];
-
-    var results = m.validate(common);
-    results.errors.InvalidSecureMarketplaceUrlInstallsAllowedFrom.should.equal(
-      '`installs_allowed_from` must use https:// when Marketplace URLs are included');
-  });
-
-  it('should be invalid when screen_size is not an object', function () {
-    common.screen_size = 'NOT AN OBJECT';
-
-    var results = m.validate(common);
-    results.errors.InvalidPropertyTypeScreenSize.should.equal(
-      '`screen_size` must be of type `object`');
-  });
-
-  it('should be invalid when screen_size is an empty object', function () {
-    common.screen_size = {};
-
-    var results = m.validate(common);
-    results.errors.InvalidEmptyScreenSize.should.equal(
-      '`screen_size` should have at least min_height or min_width');
-  });
-
-  it('should be valid when screen_size.min_width is a number', function () {
-    common.screen_size = {
-      min_width: '640'
-    };
-
-    var results = m.validate(common);
-    results.errors.should.be.empty;
-  });
-
-  it('should be invalid when screen_size.min_width is not a number', function () {
-    common.screen_size = {
-      min_width: 'NOT A NUMBER'
-    };
-
-    var results = m.validate(common);
-    results.errors.InvalidNumberScreenSizeMinWidth.should.equal(
-      '`min_width` must be a number');
-  });
-
-  it('should be valid when screen_size.min_height is a number', function () {
-    common.screen_size = {
-      min_height: '480'
-    };
-
-    var results = m.validate(common);
-    results.errors.should.be.empty;
-  });
-
-  it('should be invalid when screen_size.min_height is not a number', function () {
-    common.screen_size = {
-      min_height: 'NOT A NUMBER'
-    };
-
-    var results = m.validate(common);
-    results.errors.InvalidNumberScreenSizeMinHeight.should.equal(
-      '`min_height` must be a number');
+      var results = m.validate(common);
+      results.errors.InvalidNumberScreenSizeMinHeight.should.equal(
+        '`min_height` must be a number');
+    });
   });
 
   describe('type', function () {
