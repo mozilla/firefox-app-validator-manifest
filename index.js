@@ -302,6 +302,14 @@ var Manifest = function () {
     }
   };
 
+  var hasMaximumIdealLengthForName = function () {
+    if (self.manifest.name && self.manifest.name.length > 12) {
+      warnings['PropertyLengthTooLongName'] = "Your app's name is longer " +
+        "than 12 characters and may be truncated on Firefox OS devices. Consider " +
+        "using a shorter name for your app";
+    }
+  };
+
   var hasValidDeveloperUrl = function () {
     if (self.manifest.developer && self.manifest.developer.url) {
       if (!pathValid(self.manifest.developer.url, {canHaveProtocol: true})) {
@@ -545,6 +553,7 @@ var Manifest = function () {
     if (hasValidJSON(content)) {
       hasValidSchema(self.manifest, common);
 
+      hasMaximumIdealLengthForName();
       hasValidDeveloperUrl();
       hasValidLaunchPath();
       hasValidIconSizeAndPath();

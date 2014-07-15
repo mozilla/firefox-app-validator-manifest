@@ -22,7 +22,7 @@ describe('validate', function () {
       'format or has invalid properties');
   });
 
-  it('should return an invalid manifest property if `widgets` is included', function () {
+  it('should return a warning if `widgets` is included', function () {
     common.widgets = {};
 
     var results = m.validate(common);
@@ -144,7 +144,6 @@ describe('validate', function () {
       common.name = Array(130).join('x');
 
       var results = m.validate(common);
-
       results.errors.InvalidPropertyLengthName.should.equal(
         '`name` must not exceed length 128');
     });
@@ -153,8 +152,16 @@ describe('validate', function () {
       common.name = 'my app';
 
       var results = m.validate(common);
-
       should.not.exist(results.errors.InvalidPropertyLengthName);
+    });
+
+    it('should return a warning if the `name` field is longer than 12 characters', function () {
+      common.name = Array(14).join('x');
+
+      var results = m.validate(common);
+      results.warnings.PropertyLengthTooLongName.should.equal(
+        "Your app's name is longer than 12 characters and may be truncated " +
+        "on Firefox OS devices. Consider using a shorter name for your app");
     });
   });
 
