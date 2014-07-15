@@ -22,7 +22,7 @@ describe('validate', function () {
       'format or has invalid properties');
   });
 
-  it('should return a warning if `widgets` is included', function () {
+  it('should be invalid if `widgets` is included', function () {
     common.widgets = {};
 
     var results = m.validate(common);
