@@ -120,6 +120,8 @@ var Manifest = function () {
   var self = this;
 
   var hasValidJSON = function (content) {
+    var validJSON = true;
+
     try {
       if (typeof content !== 'object') {
         self.manifest = JSON.parse(content);
@@ -127,8 +129,11 @@ var Manifest = function () {
         self.manifest = content;
       }
     } catch (err) {
-      throw new Error('Manifest is not in a valid JSON format or has invalid properties');
+      validJSON = false;
+      errors['InvalidJSON'] = 'Manifest is not in a valid JSON format or has invalid properties';
     }
+
+    return validJSON;
   };
 
   var hasValidSchema = function (subject, schema, name, parents) {
@@ -536,20 +541,21 @@ var Manifest = function () {
       packaged: false
     };
 
-    hasValidJSON(content);
-    hasValidSchema(self.manifest, common);
+    if (hasValidJSON(content)) {
+      hasValidSchema(self.manifest, common);
 
-    hasValidDeveloperUrl();
-    hasValidLaunchPath();
-    hasValidIconSizeAndPath();
-    hasValidVersion();
-    hasValidDefaultLocale();
-    hasValidInstallsAllowedFrom();
-    hasValidScreenSize();
-    hasValidMessages();
-    hasValidType();
-    hasValidAppCachePath();
-    hasValidOrigin();
+      hasValidDeveloperUrl();
+      hasValidLaunchPath();
+      hasValidIconSizeAndPath();
+      hasValidVersion();
+      hasValidDefaultLocale();
+      hasValidInstallsAllowedFrom();
+      hasValidScreenSize();
+      hasValidMessages();
+      hasValidType();
+      hasValidAppCachePath();
+      hasValidOrigin();
+    }
 
     return {
       errors: errors,

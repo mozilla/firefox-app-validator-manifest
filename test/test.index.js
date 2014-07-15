@@ -17,14 +17,10 @@ describe('validate', function () {
   });
 
   it('should return an invalid manifest object', function () {
-    try {
-      var results = m.validate('');
-    } catch (err) {
-      err.toString().should.equal('Error: Manifest is not in a valid JSON format ' +
-        'or has invalid properties');
-    }
+    var results = m.validate('');
+    results.errors.InvalidJSON.should.equal('Manifest is not in a valid JSON ' +
+      'format or has invalid properties');
   });
-
 
   it('should return an invalid manifest with missing mandatory keys for the marketplace', function () {
     var results = m.validate({});
@@ -46,17 +42,6 @@ describe('validate', function () {
       currKey.should.equal('Mandatory field ' + f + ' is missing');
       should.not.exist(results.errors.MandatoryFieldDeveloper);
     });
-  });
-
-  it('should return an invalid manifest for duplicate fields', function () {
-    common.activities = '1';
-    common.activities = '2';
-
-    try {
-      var results = m.validate(common);
-    } catch (err) {
-      err.should.equal('Manifest is not in a valid JSON format or has invalid properties');
-    }
   });
 
   it('should return an invalid property type', function () {
