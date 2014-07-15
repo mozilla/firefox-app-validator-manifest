@@ -201,7 +201,7 @@ var Manifest = function () {
       } else if (false === additional) {
         // Now, how about those remaining unexpected keys...
         for (var k in unexpectedKeys) {
-          warnings[glueKey('UnexpectedProperty', parents, name)] = 'Unexpected property `' +
+          errors[glueKey('UnexpectedProperty', parents, name)] = 'Unexpected property `' +
             k + '` found in `' + glueObjectPath('', parents, name) + '`';
         }
       }
