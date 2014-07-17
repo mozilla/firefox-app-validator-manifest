@@ -892,6 +892,214 @@ describe('validate', function () {
     });
   });
 
+  describe('activities', function () {
+
+    beforeEach(function () {
+      common.activities = {
+        simple: {
+          href: 'foo.html',
+          disposition: 'window',
+          returnValue: true,
+          filters: {
+            target: "device",
+            type: ["image/png", "image/gif"],
+            url: {
+              required: true,
+              value: 'hi',
+              min: 10,
+              max: 100,
+              pattern: '^https?:',
+              patternFlags: 'gi',
+              // regexp: Not relevant here because you can't use a regex in JSON
+            }
+          }
+        }
+      };
+    });
+
+    it('should be valid with minimal properties', function () {
+      common.activities = {
+        simple: {
+          href: 'foo.html'
+        }
+      };
+
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+      results.warnings.should.be.empty;
+    });
+
+    it('should be valid with all valid activity properties', function () {
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+      results.warnings.should.be.empty;
+    });
+
+    it('should be invalid when not an object', function () {
+      common.activities = 'HONK HONK';
+
+      var results = m.validate(common);
+      results.errors.InvalidPropertyTypeActivities.should.equal(
+        '`activities` must be of type `object`');
+    });
+
+    it('should be invalid when not an empty object', function () {
+      common.activities = {};
+
+      var results = m.validate(common);
+      results.errors.InvalidPropertyCountActivities.should.equal(
+        '`activities` must have at least 1 properties.');
+    });
+
+    it('should be invalid when properties are not objects', function () {
+      common.activities = {
+        foo: 'HONK HONK'
+      };
+
+      var results = m.validate(common);
+      results.errors.InvalidPropertyTypeActivitiesFoo.should.equal(
+        '`foo` must be of type `object`');
+    });
+
+    it('should be invalid when properties are missing `href`', function () {
+      delete common.activities.simple.href;
+
+      var results = m.validate(common);
+      results.errors.MandatoryFieldActivitiesSimpleHref.should.equal(
+        'Mandatory field href is missing');
+    });
+
+    it('should be invalid when activities have unexpected properties', function () {
+      common.activities.simple.foo = 'bar';
+
+      var results = m.validate(common);
+      results.errors.UnexpectedPropertyActivitiesSimple.should.equal(
+        'Unexpected property `foo` found in `activities.simple`');
+    });
+
+    it('should be invalid with unexpected `disposition` values', function () {
+      common.activities.simple.disposition = 'dumptruck';
+
+      var results = m.validate(common);
+      results.errors.InvalidStringTypeActivitiesSimpleDisposition.should.equal(
+        '`disposition` must be one of the following: window,inline');
+    });
+
+    it('should be valid with expected `disposition` values', function () {
+      ['window', 'inline'].forEach(function (value) {
+        common.activities.simple.disposition = value;
+
+        var results = m.validate(common);
+        results.errors.should.be.empty;
+        results.warnings.should.be.empty;
+      });
+    });
+
+    it('should be invalid when `returnValue` is not boolean', function () {
+      common.activities.simple.returnValue = 'HI THERE';
+
+      var results = m.validate(common);
+      results.errors.InvalidPropertyTypeActivitiesSimpleReturnValue.should.equal(
+        '`returnValue` must be of type `boolean`');
+    });
+
+    it('should be invalid when `filters` is not an object', function () {
+      common.activities.simple.filters = 'HI THERE';
+
+      var results = m.validate(common);
+      results.errors.InvalidPropertyTypeActivitiesSimpleFilters.should.equal(
+        '`filters` must be of type `object`');
+    });
+
+    it('should be invalid when `filters` is an empty object', function () {
+      common.activities.simple.filters = {};
+
+      var results = m.validate(common);
+      results.errors.InvalidPropertyCountActivitiesSimpleFilters.should.equal(
+        '`filters` must have at least 1 properties.');
+    });
+
+    it('should be invalid when an activity filter is boolean', function () {
+      common.activities.simple.filters.target = true;
+
+      var results = m.validate(common);
+      results.errors.InvalidActivitiesFilter.should.equal(
+        'Activity filters must be of type `array`, `string`, or `object`');
+    });
+
+    it('should be invalid when an activity filter object has unexpected properties', function () {
+      common.activities.simple.filters.url.foo = 'bar';
+
+      var results = m.validate(common);
+      results.errors.UnexpectedPropertyFiltersSimpleUrl.should.equal(
+        'Unexpected property `foo` found in `filters.simple.url`');
+    });
+
+    it('should be invalid when an activity filter object has properties with the wrong types', function () {
+      common.activities.simple.filters.url = {
+        required: 'maybe?',
+        value: true,
+        min: 'BLAH',
+        max: false,
+        pattern: false,
+        patternFlags: true
+      };
+
+      var results = m.validate(common);
+      results.errors.InvalidActivitiesFilterValue.should.equal(
+        'Activity filter value property must be of type `array` or `string`');
+      results.errors.InvalidPropertyTypeFiltersSimpleUrlRequired.should.equal(
+        '`required` must be of type `boolean`');
+      results.errors.InvalidPropertyTypeFiltersSimpleUrlMin.should.equal(
+        '`min` must be of type `number`');
+      results.errors.InvalidPropertyTypeFiltersSimpleUrlMax.should.equal(
+        '`max` must be of type `number`');
+      results.errors.InvalidPropertyTypeFiltersSimpleUrlPattern.should.equal(
+         '`pattern` must be of type `string`');
+      results.errors.InvalidPropertyTypeFiltersSimpleUrlPatternFlags.should.equal(
+         '`patternFlags` must be of type `string`');
+    });
+
+    it('should be valid when an activity filter object has an array for `value`', function () {
+      common.activities.simple.filters.url.value = ['foo', 'bar'];
+
+      var results = m.validate(common);
+      results.errors.should.be.empty;
+      results.warnings.should.be.empty;
+    });
+
+    it('should be invalid when an activity filter object has `value` array with non-strings', function () {
+      common.activities.simple.filters.url.value = [
+        true,
+        {
+          foo: 'bar'
+        }
+      ];
+
+      var results = m.validate(common);
+      results.errors.InvalidItemTypeFiltersSimpleValue.should.equal(
+        'items of array `value` must be of type `string`');
+    });
+
+    it('should be invalid when an activity filter object has `patternFlags` that exceeds max length', function () {
+      common.activities.simple.filters.url.patternFlags = 'iiiii';
+
+      var results = m.validate(common);
+
+      results.errors.InvalidPropertyLengthFiltersSimpleUrlPatternFlags.should.equal(
+        '`patternFlags` must not exceed length 4');
+    });
+
+    it('should be invalid when an activity filter object has `patternFlags` that contains unexpected characters', function () {
+      common.activities.simple.filters.url.patternFlags = 'asdf';
+
+      var results = m.validate(common);
+      results.errors.InvalidStringPatternFiltersSimpleUrlPatternFlags.should.equal(
+        '`patternFlags` must match the pattern /^[igmy]+$/');
+    });
+
+  });
+
   describe('permissions', function () {
     var PERMISSIONS = {
       web: [

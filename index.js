@@ -3,7 +3,7 @@
 var common = require('./rules/common.json');
 var sMarketplace = require('./rules/marketplace.json');
 
-// TODO: These should probably go somewhere better.
+// TODO: These constants should probably go somewhere better.
 var DEFAULT_WEBAPP_MRKT_URLS = [
   'https://marketplace.firefox.com',
   'https://marketplace-dev.allizom.org'
@@ -16,7 +16,7 @@ var BANNED_ORIGINS = [
 ];
 
 var Manifest = function () {
-  this.manifest;
+  this.manifest = {};
   this.appType = 'mkt';
 
   var errors = {};
@@ -48,6 +48,7 @@ var Manifest = function () {
       hasValidType();
       hasValidAppCachePath();
       hasValidOrigin();
+      hasValidActivitiesFilters();
     }
 
     return {
@@ -83,6 +84,7 @@ var Manifest = function () {
     if ('string' === typeof subject) {
       hasValidStringItem(subject, schema, name, parents);
       hasRequiredStringLength(subject, schema, name, parents);
+      hasValidStringPattern(subject, schema, name, parents);
     }
 
     if ('[object Array]' === toString.call(subject)) {
@@ -92,9 +94,8 @@ var Manifest = function () {
     }
 
     if ('[object Object]' === toString.call(subject)) {
-      if (schema.required) {
-        hasMandatoryKeys(subject, schema, name, parents);
-      }
+      hasMandatoryKeys(subject, schema, name, parents);
+      hasRequiredPropertyCount(subject, schema, name, parents);
 
       // Collect a set of unexpected keys. Will be cleared out as they turn out
       // to have been expected per schema properties or patternProperties
@@ -166,6 +167,33 @@ var Manifest = function () {
     }
   };
 
+  var hasRequiredPropertyCount = function (subject, schema, name, parents) {
+    var hasMax = schema.hasOwnProperty('maxProperties');
+    var hasMin = schema.hasOwnProperty('minProperties');
+
+    if (!(hasMin || hasMax)) {
+      return;
+    }
+
+    var count = 0;
+    for (var k in subject) {
+      if (subject.hasOwnProperty(k)) {
+        count++;
+      }
+    }
+
+    if (hasMin && count < schema.minProperties) {
+      errors[glueKey('InvalidPropertyCount', parents, name)] = '`' + name +
+        '` must have at least ' + schema.minProperties + ' properties.';
+    }
+
+    if (hasMax && count > schema.maxProperties) {
+      errors[glueKey('InvalidPropertyCount', parents, name)] = '`' + name +
+        '` must have no more than ' + schema.maxProperties + ' properties.';
+    }
+  
+  };
+
   var isValidObjectType = function (prop, type) {
     if ('array' === type) {
       if (toString.call(prop) !== '[object Array]') {
@@ -175,10 +203,13 @@ var Manifest = function () {
       if (toString.call(prop) !== '[object Object]') {
         return false;
       }
+    } else if ('number' === type) {
+      if (!/^[\d\.]+$/.test(prop)) {
+        return false;
+      }
     } else if (typeof prop !== type) {
       return false;
     }
-
     return true;
   };
 
@@ -244,6 +275,16 @@ var Manifest = function () {
       warnings['PropertyLengthTooLongName'] = "Your app's name is longer " +
         "than 12 characters and may be truncated on Firefox OS devices. Consider " +
         "using a shorter name for your app";
+    }
+  };
+
+  var hasValidStringPattern = function (subject, schema, name, parents) {
+    if (schema.pattern) {
+      var re = new RegExp(schema.pattern);
+      if (!re.test(subject)) {
+        errors[glueKey('InvalidStringPattern', parents, name)] = '`' + name +
+          '` must match the pattern /' + schema.pattern +'/';
+      }
     }
   };
 
@@ -477,6 +518,83 @@ var Manifest = function () {
       }
     }
   };
+
+  var ACTIVITY_FILTER_OBJECT_SCHEMA = {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      required: { type: 'boolean' },
+      min: { type: 'number' },
+      max: { type: 'number' },
+      pattern: { type: 'string' },
+      patternFlags: {
+        type: 'string',
+        maxLength: 4,
+        pattern: '^[igmy]+$'
+      },
+      // NOTE: This is funky, because `value` can be a string or an array, so
+      // it needs special validation below.
+      value: { }
+    }
+  };
+
+  // But if `value` is an array, it should only have strings...
+  var ACTIVITY_FILTER_OBJECT_VALUE_SCHEMA = {
+    type: 'array',
+    items: {
+      type: 'string'
+    }
+  };
+
+  var hasValidActivitiesFilters = function () {
+    var activities = self.manifest.activities;
+    if (activities) {
+
+      for (var activityName in activities) {
+        var activity = activities[activityName];
+        
+        if (activity.filters) {
+          
+          for (var filterName in activity.filters) {
+            var filter = activity.filters[filterName];
+            
+            var isArray = '[object Array]' === toString.call(filter);
+            var isString = 'string' === typeof filter;
+            var isObject = 'object' === typeof filter;
+
+            if (!(isArray || isString || isObject)) {
+
+              errors.InvalidActivitiesFilter = 
+                'Activity filters must be of type `array`, `string`, or `object`';
+
+            } else if (isObject && !isArray) {
+              
+              hasValidSchema(filter, ACTIVITY_FILTER_OBJECT_SCHEMA,
+                             filterName, ['filters', activityName]);
+
+              if (filter.hasOwnProperty('value')) {
+               
+                var value = filter.value;
+                var valueIsArray ='[object Array]' === toString.call(value) 
+
+                if (!(valueIsArray || 'string' === typeof value)) {
+                
+                  errors.InvalidActivitiesFilterValue = 
+                    'Activity filter value property must be of type `array` or `string`'; 
+                
+                } else if (valueIsArray) {
+                  
+                  hasValidSchema(value, ACTIVITY_FILTER_OBJECT_VALUE_SCHEMA,
+                                 'value', ['filters', activityName]);
+                
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  };
 };
 
 // Stealing some notions from underscore.js
@@ -490,7 +608,6 @@ var clean = function (word) {
 var camelCase = function (word) {
   var words = word.toString().split('_');
   var finalWord = [];
-
   words.forEach(function (w) {
     finalWord.push(clean(w.charAt(0).toUpperCase() + w.slice(1)));
   });
@@ -575,27 +692,3 @@ var pathValid = function (path, options) {
 };
 
 module.exports = Manifest;
-
-/*
-
-Actual rules here https://github.com/mozilla/app-validator/blob/master/appvalidator/specs/webapps.py
-
-var RULES = {
-  "child_nodes": {
-    "activities": {
-        "expected_type": "object",
-        "allowed_nodes": ["*"],
-        "child_nodes": {
-            "*": {
-                "expected_type": "object",
-                "required_nodes": ["href"],
-                "allowed_once_nodes": [
-                    "disposition", "filters", "returnValue"
-                ],
-                "child_nodes": WEB_ACTIVITY_HANDLER,
-            }
-        }
-    },
-  }
-};
-*/

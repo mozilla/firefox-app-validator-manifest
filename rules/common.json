@@ -3,9 +3,32 @@
     "title": "Marketplace",
     "description": "Firefox Marketplace manifest.webapp file - shared",
     "type": "object",
+    "required": ["description", "name"],
+    "additionalProperties": false,
+    "dependencies": {
+        "default_locale": ["locales"]
+    },
     "properties": {
         "activities": {
-
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+                "type": "object",
+                "required": ["href"],
+                "additionalProperties": false,
+                "properties": {
+                    "href": { "type": "string" },
+                    "returnValue": { "type": "boolean" },
+                    "disposition": {
+                        "type": "string",
+                        "oneOf": ["window", "inline"]
+                    },
+                    "filters": {
+                        "type": "object",
+                        "minProperties": 1
+                    }
+                }
+            }
         },
         "appcache_path": {
             "type": "string",
@@ -14,6 +37,7 @@
         "chrome": {
             "type": "object",
             "additionalProperties": false,
+            "minProperties": 1,
             "properties": {
                 "navigation": {
                     "type": "boolean"
@@ -202,10 +226,5 @@
             "pattern": "^[a-zA-Z0-9_,*-.]+$",
             "minLength": 1
         }
-    },
-    "dependencies": {
-        "default_locale": ["locales"]
-    },
-    "required": ["description", "name"],
-    "additionalProperties": false
+    }
 }
