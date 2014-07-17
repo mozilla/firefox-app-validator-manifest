@@ -1114,14 +1114,14 @@ describe('validate', function () {
         'input', 'mobilenetwork', 'speaker-control', 'systemXHR', 'tcp-socket'
       ],
       certified: [
-        'attention', 'audio-channel-ringer', 'audio-channel-telephony',
         'audio-channel-publicnotification', 'background-sensors',
         'backgroundservice', 'bluetooth', 'camera', 'cellbroadcast',
         'downloads', 'device-storage:apps', 'embed-apps', 'idle',
-        'mobileconnection', 'network-events', 'networkstats-manage',
-        'open-remote-window', 'permissions', 'phonenumberservice', 'power',
-        'settings', 'sms', 'telephony', 'time', 'voicemail', 'webapps-manage',
-        'wifi-manage', 'wappush'
+        'mobileconnection', 'moz-attention', 'moz-audio-channel-telephony',
+        'moz-audio-channel-ringer', 'moz-firefox-accounts', 'network-events',
+        'networkstats-manage', 'open-remote-window', 'permissions',
+        'phonenumberservice', 'power', 'settings', 'sms', 'telephony', 'time',
+        'voicemail', 'webapps-manage', 'wifi-manage', 'wappush'
       ]
     };
 
