@@ -15,101 +15,6 @@ var BANNED_ORIGINS = [
   'mozilla.org'
 ];
 
-// Stealing some notions from underscore.js
-var ObjProto = Object.prototype;
-var toString = ObjProto.toString;
-
-var clean = function (word) {
-  return word.toString().trim();
-};
-
-var camelCase = function (word) {
-  var words = word.toString().split('_');
-  var finalWord = [];
-
-  words.forEach(function (w) {
-    finalWord.push(clean(w.charAt(0).toUpperCase() + w.slice(1)));
-  });
-
-  return finalWord.join('');
-};
-
-// glueKey takes a string prefix, an array of string parents, and then any
-// number of additional parameters. Except for the prefix, these are all
-// converted to CamelCase and concatenated together
-var glueKey = function (prefix, parents) {
-  var rest = Array.prototype.slice.call(arguments, 2);
-  var parts = parents.concat(rest).filter(function (item) {
-    return item !== '';
-  }).map(function (item) {
-    if (/^\d+$/.test(item)) {
-      return 'Item';
-    } else {
-      return camelCase(item);
-    }
-  });
-  return prefix + parts.join('');
-};
-
-// glueKey takes a string prefix, an array of string parents, and then any
-// number of additional parameters. These are all concatenated together with a
-// '.' separator.
-var glueObjectPath = function (prefix, parents) {
-  var rest = Array.prototype.slice.call(arguments, 2);
-  var parts = parents.concat(rest).filter(function (item) {
-    return item !== '';
-  });
-
-  return prefix + parts.join('.');
-};
-
-var parseUrl = function (path) {
-  // TODO: Could replace this with a different implementation to make it
-  // node-agnostic and work in a browser. http://nodejs.org/api/url.html
-  return require('url').parse(path);
-};
-
-var pathValid = function (path, options) {
-
-  if (path == '*') {
-    return !!options.canBeAsterisk;
-  }
-
-  if (path.indexOf('data:') !== -1) {
-    return !!options.canBeData;
-  }
-
-  // Nothing good comes from relative protocols.
-  if (path.indexOf('//') === 0) {
-    return false;
-  }
-
-  // Try to parse the URL.
-  try {
-    var parsed = parseUrl(path);
-
-    // If the URL is relative, return whether the URL can be relative.
-    if (!parsed.protocol || !parsed.host) {
-      if (parsed.pathname && parsed.pathname.indexOf('/') === 0) {
-        return !!options.canBeAbsolute;
-      } else {
-        return !!options.canBeRelative;
-      }
-    }
-
-    // If the URL is absolute but uses an invalid protocol, return False
-    if (['http:', 'https:'].indexOf(parsed.protocol.toLowerCase()) === -1) {
-      return false;
-    }
-
-    return !!options.canHaveProtocol;
-
-  } catch (e) {
-    // If there was an error parsing the URL, return False.
-    return false;
-  }
-};
-
 var Manifest = function () {
   this.manifest;
   this.appType = 'mkt';
@@ -118,6 +23,38 @@ var Manifest = function () {
   var warnings = {};
 
   var self = this;
+
+  this.validate = function (content, options) {
+    errors = {};
+    warnings = {};
+
+    this.options = options || {
+      listed: false,
+      packaged: false
+    };
+
+    if (hasValidJSON(content)) {
+      hasValidSchema(self.manifest, common);
+
+      hasMaximumIdealLengthForName();
+      hasValidDeveloperUrl();
+      hasValidLaunchPath();
+      hasValidIconSizeAndPath();
+      hasValidVersion();
+      hasValidDefaultLocale();
+      hasValidInstallsAllowedFrom();
+      hasValidScreenSize();
+      hasValidMessages();
+      hasValidType();
+      hasValidAppCachePath();
+      hasValidOrigin();
+    }
+
+    return {
+      errors: errors,
+      warnings: warnings
+    };
+  };
 
   var hasValidJSON = function (content) {
     var validJSON = true;
@@ -540,38 +477,101 @@ var Manifest = function () {
       }
     }
   };
+};
 
-  this.validate = function (content, options) {
-    errors = {};
-    warnings = {};
+// Stealing some notions from underscore.js
+var ObjProto = Object.prototype;
+var toString = ObjProto.toString;
 
-    this.options = options || {
-      listed: false,
-      packaged: false
-    };
+var clean = function (word) {
+  return word.toString().trim();
+};
 
-    if (hasValidJSON(content)) {
-      hasValidSchema(self.manifest, common);
+var camelCase = function (word) {
+  var words = word.toString().split('_');
+  var finalWord = [];
 
-      hasMaximumIdealLengthForName();
-      hasValidDeveloperUrl();
-      hasValidLaunchPath();
-      hasValidIconSizeAndPath();
-      hasValidVersion();
-      hasValidDefaultLocale();
-      hasValidInstallsAllowedFrom();
-      hasValidScreenSize();
-      hasValidMessages();
-      hasValidType();
-      hasValidAppCachePath();
-      hasValidOrigin();
+  words.forEach(function (w) {
+    finalWord.push(clean(w.charAt(0).toUpperCase() + w.slice(1)));
+  });
+
+  return finalWord.join('');
+};
+
+// glueKey takes a string prefix, an array of string parents, and then any
+// number of additional parameters. Except for the prefix, these are all
+// converted to CamelCase and concatenated together
+var glueKey = function (prefix, parents) {
+  var rest = Array.prototype.slice.call(arguments, 2);
+  var parts = parents.concat(rest).filter(function (item) {
+    return item !== '';
+  }).map(function (item) {
+    if (/^\d+$/.test(item)) {
+      return 'Item';
+    } else {
+      return camelCase(item);
+    }
+  });
+  return prefix + parts.join('');
+};
+
+// glueKey takes a string prefix, an array of string parents, and then any
+// number of additional parameters. These are all concatenated together with a
+// '.' separator.
+var glueObjectPath = function (prefix, parents) {
+  var rest = Array.prototype.slice.call(arguments, 2);
+  var parts = parents.concat(rest).filter(function (item) {
+    return item !== '';
+  });
+
+  return prefix + parts.join('.');
+};
+
+var parseUrl = function (path) {
+  // TODO: Could replace this with a different implementation to make it
+  // node-agnostic and work in a browser. http://nodejs.org/api/url.html
+  return require('url').parse(path);
+};
+
+var pathValid = function (path, options) {
+
+  if (path == '*') {
+    return !!options.canBeAsterisk;
+  }
+
+  if (path.indexOf('data:') !== -1) {
+    return !!options.canBeData;
+  }
+
+  // Nothing good comes from relative protocols.
+  if (path.indexOf('//') === 0) {
+    return false;
+  }
+
+  // Try to parse the URL.
+  try {
+    var parsed = parseUrl(path);
+
+    // If the URL is relative, return whether the URL can be relative.
+    if (!parsed.protocol || !parsed.host) {
+      if (parsed.pathname && parsed.pathname.indexOf('/') === 0) {
+        return !!options.canBeAbsolute;
+      } else {
+        return !!options.canBeRelative;
+      }
     }
 
-    return {
-      errors: errors,
-      warnings: warnings
-    };
-  };
+    // If the URL is absolute but uses an invalid protocol, return False
+    if (['http:', 'https:'].indexOf(parsed.protocol.toLowerCase()) === -1) {
+      return false;
+    }
+
+    return !!options.canHaveProtocol;
+
+  } catch (e) {
+    // If there was an error parsing the URL, return False.
+    return false;
+  }
 };
 
 module.exports = Manifest;
