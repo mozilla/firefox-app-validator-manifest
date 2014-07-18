@@ -18,7 +18,6 @@ var BANNED_ORIGINS = [
 
 var Manifest = function () {
   this.manifest = {};
-  this.appType = 'mkt';
 
   var errors = {};
   var warnings = {};
@@ -156,7 +155,7 @@ var Manifest = function () {
     var missingKeys = [];
     var keys = schema.required;
 
-    if (parents.length === 0 && self.appType === 'mkt') {
+    if (parents.length === 0 && self.options.listed) {
       keys = keys.concat(sMarketplace.required);
     }
 
@@ -316,14 +315,19 @@ var Manifest = function () {
   // if it is an arbitrary natural number, so this will suffice for current manifest validation.
   var hasValidIconSizeAndPath = function () {
     if (self.manifest.icons) {
-      for (var k in self.manifest.icons) {
+      var icons = self.manifest.icons;
+      if (self.options.listed && !icons.hasOwnProperty('128')) {
+        errors['InvalidListedRequires128Icon'] =
+          '`icons` must include a 128x128 icon when app is listed';
+      }
+      for (var k in icons) {
         var key = parseInt(k, 10);
 
         if (isNaN(key) || key < 1) {
           errors['InvalidIconSize' + camelCase(k)] = 'Icon size must be a natural number';
         }
 
-        if (!self.manifest.icons[k] || self.manifest.icons[k].length < 1) {
+        if (!icons[k] || icons[k].length < 1) {
           errors['InvalidIconPath' + camelCase(k)] = 'Paths to icons must be ' +
             'absolute paths, relative URIs, or data URIs';
         }

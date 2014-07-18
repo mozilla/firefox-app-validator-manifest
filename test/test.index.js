@@ -30,7 +30,9 @@ describe('validate', function () {
   });
 
   it('should return an invalid manifest with missing mandatory keys for the marketplace', function () {
-    var results = m.validate({});
+    var results = m.validate({}, {
+      listed: true
+    });
 
     ['name', 'description', 'developer'].forEach(function (f) {
       var currKey = results.errors['MandatoryField' + f.charAt(0).toUpperCase() + f.slice(1)];
@@ -97,6 +99,19 @@ describe('validate', function () {
 
       should.not.exist(results.errors.InvalidIconSize128);
       should.not.exist(results.errors.InvalidIconPath128);
+    });
+
+    it('should be invalid if listed but missing a 128x128 icon', function () {
+      common.icons = {
+        '64': '/path/to/icon.png'
+      };
+
+      var results = m.validate(common, {
+        listed: true
+      });
+
+      results.errors.InvalidListedRequires128Icon.should.equal(
+        '`icons` must include a 128x128 icon when app is listed');
     });
   });
 

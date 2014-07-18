@@ -27,7 +27,16 @@ This is the Firefox App manifest validator for verifying that your `manifest.web
       }
     });
 
-`options` contains the app resource keys of: `listed` and `packaged`. Defaults to `false` for both if not included.
+## Options
+
+The first parameter to the `validate()` method expects a webapp manifest. The
+second parameter, however, can be an object containing validation options.
+
+These options include:
+
+* `listed` - default `false`, flag whether or not this app will be listed on the Marketplace 
+
+* `packaged` - default `false`, flag whether or not this app is packaged, rather than a plain web app
 
 ## Tests
 
