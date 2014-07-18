@@ -6,6 +6,7 @@ var sMarketplace = require('./rules/marketplace.json');
 // TODO: These constants should probably go somewhere better.
 var DEFAULT_WEBAPP_MRKT_URLS = [
   'https://marketplace.firefox.com',
+  'https://marketplace.allizom.org',
   'https://marketplace-dev.allizom.org'
 ];
 
