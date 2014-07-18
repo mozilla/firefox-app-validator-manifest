@@ -47,6 +47,8 @@ var Manifest = function () {
       hasValidType();
       hasValidAppCachePath();
       hasValidOrigin();
+      hasValidRedirects();
+      hasValidRole();
       hasValidActivitiesFilters();
     }
 
@@ -488,6 +490,24 @@ var Manifest = function () {
       }
     }
   };
+
+  var hasValidRedirects = function () {
+    if (self.manifest.redirects) {
+      if (['certified', 'privileged'].indexOf(self.manifest.type) === -1) {
+        errors.InvalidRedirectsType = 'Apps that are not privileged may not use ' +
+          'the `redirects` field of the manifest';
+      }
+    }
+  };
+
+  var hasValidRole = function () {
+    if (self.manifest.role) {
+      if (['certified', 'privileged'].indexOf(self.manifest.type) === -1) {
+        errors.InvalidRoleType = 'Apps that are not privileged may not use ' +
+          'the `role` field of the manifest';
+      }
+    }
+  }
 
   var ACTIVITY_FILTER_OBJECT_SCHEMA = {
     type: 'object',

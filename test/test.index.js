@@ -262,17 +262,29 @@ describe('validate', function () {
   describe('role', function () {
     it('should have an invalid string type for oneOf', function () {
       common.role = 'test';
+      common.type = 'privileged';
 
-      var results = m.validate(common);
+      var results = m.validate(common, {packaged: true});
       results.errors.InvalidStringTypeRole.should.equal(
         '`role` must be one of the following: system,input,homescreen');
     });
 
     it('should have a valid string type for oneOf', function () {
       common.role = 'system';
+      common.type = 'privileged';
+      common.launch_path = '/';
+
+      var results = m.validate(common, {packaged: true});
+      results.errors.should.be.empty;
+    });
+
+    it('should have an invalid role if the app is not privileged', function () {
+      common.role = 'system';
+      common.type = 'web';
 
       var results = m.validate(common);
-      results.errors.should.be.empty;
+      results.errors.InvalidRoleType.should.equal(
+        'Apps that are not privileged may not use the `role` field of the manifest');
     });
   });
 
@@ -465,6 +477,8 @@ describe('validate', function () {
 
   describe('redirects', function () {
     it('should be valid when redirects is an array of objects with expected properties', function () {
+      common.type = 'privileged';
+      common.launch_path = '/';
       common.redirects = [
         {
           to: 'asdf',
@@ -476,19 +490,23 @@ describe('validate', function () {
         }
       ];
 
-      var results = m.validate(common);
+      var results = m.validate(common, {packaged: true});
       results.errors.should.be.empty;
     });
 
     it('should be invalid when redirects is not an array', function () {
+      common.type = 'privileged';
+      common.launch_path = '/';
       common.redirects = 'NOT AN ARRAY';
 
-      var results = m.validate(common);
+      var results = m.validate(common, {packaged: true});
       results.errors.InvalidPropertyTypeRedirects.should.equal(
         '`redirects` must be of type `array`');
     });
 
     it('should be invalid when redirects is not an array of objects', function () {
+      common.type = 'privileged';
+      common.launch_path = '/';
       common.redirects = [
         'asdf',
         {
@@ -497,12 +515,14 @@ describe('validate', function () {
         }
       ];
 
-      var results = m.validate(common);
+      var results = m.validate(common, {packaged: true});
       results.errors.InvalidItemTypeRedirects.should.equal(
         'items of array `redirects` must be of type `object`');
     });
 
     it('should be invalid when redirects is not an array of objects with string values', function () {
+      common.type = 'privileged';
+      common.launch_path = '/';
       common.redirects = [
         {
           to: ['NOT', 'A', 'STRING'],
@@ -510,12 +530,14 @@ describe('validate', function () {
         }
       ];
 
-      var results = m.validate(common);
+      var results = m.validate(common, {packaged: true});
       results.errors.InvalidPropertyTypeRedirectsItemTo.should.equal(
         '`to` must be of type `string`');
     });
 
     it('should be invalid when redirect items have unexpected properties', function () {
+      common.type = 'privileged';
+      common.launch_path = '/';
       common.redirects = [
         {
           bar: 'asdf',
@@ -527,9 +549,23 @@ describe('validate', function () {
         }
       ];
 
-      var results = m.validate(common);
+      var results = m.validate(common, {packaged: true});
       results.errors.UnexpectedPropertyRedirectsItem.should.equal(
         'Unexpected property `foo` found in `redirects.0`');
+    });
+
+    it('should be invalid when the app is not privileged', function () {
+      common.type = 'web';
+      common.redirects = [
+        {
+          from: 'http://validurl.com/index.html',
+          to: 'http://validurl.com/index.html'
+        }
+      ];
+
+      var results = m.validate(common);
+      results.errors.InvalidRedirectsType.should.equal(
+        'Apps that are not privileged may not use the `redirects` field of the manifest');
     });
   });
 
