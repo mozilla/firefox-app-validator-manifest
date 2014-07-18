@@ -243,15 +243,16 @@ describe('validate', function () {
   });
 
   describe('version', function () {
-    it('should have an invalid version', function () {
-      common.version = 'v1.0!!';
+    it('should be invalid if empty', function () {
+      common.version = '';
 
       var results = m.validate(common);
-      results.errors.InvalidVersion.should.equal('`version` is in an invalid format.');
+      results.errors.InvalidPropertyLengthVersion.should.equal(
+        '`version` must be at least 1 in length');
     });
 
     it('should have a valid version', function () {
-      common.version = 'v1.0';
+      common.version = 'v1.0!!honkhonkhonk';
 
       var results = m.validate(common);
       results.errors.should.be.empty;
