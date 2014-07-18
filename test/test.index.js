@@ -66,14 +66,23 @@ describe('validate', function () {
       common.launch_path = '//';
 
       var results = m.validate(common);
-      results.errors.InvalidLaunchPath.should.equal("`launch_path` must be a path relative to app's origin");
+      results.errors.InvalidStringPatternLaunchPath.should.exist;
     });
 
     it('should return a valid launch path', function () {
-      common.launch_path = '/';
+      common.launch_path = '/index.html';
 
       var results = m.validate(common);
-      should.not.exist(results.errors.InvalidLaunchPath);
+      results.errors.should.be.empty;
+    });
+
+    it('should be invalid when missing but app is packaged', function () {
+      var results = m.validate(common, {
+        packaged: true
+      });
+
+      results.errors.InvalidPackagedRequiresLaunchPath.should.equal(
+        '`launch_path` is required when app is packaged');
     });
   });
 
@@ -901,6 +910,7 @@ describe('validate', function () {
     it('should be valid when the app is privileged and has a valid origin', function () {
       common.type = 'privileged';
       common.origin = 'app://validurl.com';
+      common.launch_path = '/foo.html';
 
       var results = m.validate(common, {packaged: true});
       results.errors.should.be.empty;

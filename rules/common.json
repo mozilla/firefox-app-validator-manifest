@@ -127,7 +127,7 @@
         },
         "launch_path": {
             "type": "string",
-            "pattern": "^(/\\w+)*/?$",
+            "pattern": "^(/[^/]+)*/?$",
             "minLength": 1
         },
         "locales": {

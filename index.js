@@ -298,16 +298,9 @@ var Manifest = function () {
   };
 
   var hasValidLaunchPath = function () {
-    if (self.manifest.launch_path) {
-      var pattern = new RegExp(common.properties.launch_path.pattern);
-      var launchPath = clean(self.manifest.launch_path);
-
-      if (launchPath.length > 0) {
-        if (pattern.test(launchPath) === false) {
-          errors.InvalidLaunchPath = "`launch_path` must be a path relative " +
-            "to app's origin";
-        }
-      }
+    if (self.options.packaged && !self.manifest.launch_path) {
+      errors.InvalidPackagedRequiresLaunchPath =
+        '`launch_path` is required when app is packaged';
     }
   };
 
