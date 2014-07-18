@@ -214,9 +214,6 @@
             "type": "string",
             "oneOf": ["system", "input", "homescreen"]
         },
-        "screen_size": {
-            "type": "object"
-        },
         "type": {
             "type": "string",
             "oneOf": ["web", "privileged", "certified"]

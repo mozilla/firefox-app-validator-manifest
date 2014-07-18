@@ -382,62 +382,6 @@ describe('validate', function () {
     });
   });
 
-  describe('screen_size', function () {
-    it('should be invalid when screen_size is not an object', function () {
-      common.screen_size = 'NOT AN OBJECT';
-
-      var results = m.validate(common);
-      results.errors.InvalidPropertyTypeScreenSize.should.equal(
-        '`screen_size` must be of type `object`');
-    });
-
-    it('should be invalid when screen_size is an empty object', function () {
-      common.screen_size = {};
-
-      var results = m.validate(common);
-      results.errors.InvalidEmptyScreenSize.should.equal(
-        '`screen_size` should have at least min_height or min_width');
-    });
-
-    it('should be valid when screen_size.min_width is a number', function () {
-      common.screen_size = {
-        min_width: '640'
-      };
-
-      var results = m.validate(common);
-      results.errors.should.be.empty;
-    });
-
-    it('should be invalid when screen_size.min_width is not a number', function () {
-      common.screen_size = {
-        min_width: 'NOT A NUMBER'
-      };
-
-      var results = m.validate(common);
-      results.errors.InvalidNumberScreenSizeMinWidth.should.equal(
-        '`min_width` must be a number');
-    });
-
-    it('should be valid when screen_size.min_height is a number', function () {
-      common.screen_size = {
-        min_height: '480'
-      };
-
-      var results = m.validate(common);
-      results.errors.should.be.empty;
-    });
-
-    it('should be invalid when screen_size.min_height is not a number', function () {
-      common.screen_size = {
-        min_height: 'NOT A NUMBER'
-      };
-
-      var results = m.validate(common);
-      results.errors.InvalidNumberScreenSizeMinHeight.should.equal(
-        '`min_height` must be a number');
-    });
-  });
-
   describe('type', function () {
     it('should be valid when type is one of the expected values', function () {
       var types = {

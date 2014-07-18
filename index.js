@@ -43,7 +43,6 @@ var Manifest = function () {
       hasValidVersion();
       hasValidDefaultLocale();
       hasValidInstallsAllowedFrom();
-      hasValidScreenSize();
       hasValidMessages();
       hasValidType();
       hasValidAppCachePath();
@@ -191,7 +190,7 @@ var Manifest = function () {
       errors[glueKey('InvalidPropertyCount', parents, name)] = '`' + name +
         '` must have no more than ' + schema.maxProperties + ' properties.';
     }
-  
+
   };
 
   var isValidObjectType = function (prop, type) {
@@ -411,33 +410,6 @@ var Manifest = function () {
     }
   };
 
-  var hasValidScreenSize = function () {
-    var screenSize = self.manifest.screen_size;
-
-    if (!screenSize || 'object' !== typeof screenSize) {
-      return;
-    }
-
-    if (!(screenSize.hasOwnProperty('min_width') ||
-          screenSize.hasOwnProperty('min_height'))) {
-      errors.InvalidEmptyScreenSize = '`screen_size` should have at least ' +
-        'min_height or min_width';
-      return;
-    }
-
-    var validSize = function (key) {
-      var val = screenSize[key];
-
-      if (val && !(/^\d+$/.test(val))) {
-        errors['InvalidNumberScreenSize' + camelCase(key)] = '`'+ key +
-          '` must be a number';
-      }
-    };
-
-    validSize('min_width');
-    validSize('min_height');
-  };
-
   var hasValidType = function () {
     var type = self.manifest.type;
 
@@ -550,41 +522,41 @@ var Manifest = function () {
 
       for (var activityName in activities) {
         var activity = activities[activityName];
-        
+
         if (activity.filters) {
-          
+
           for (var filterName in activity.filters) {
             var filter = activity.filters[filterName];
-            
+
             var isArray = '[object Array]' === toString.call(filter);
             var isString = 'string' === typeof filter;
             var isObject = 'object' === typeof filter;
 
             if (!(isArray || isString || isObject)) {
 
-              errors.InvalidActivitiesFilter = 
+              errors.InvalidActivitiesFilter =
                 'Activity filters must be of type `array`, `string`, or `object`';
 
             } else if (isObject && !isArray) {
-              
+
               hasValidSchema(filter, ACTIVITY_FILTER_OBJECT_SCHEMA,
                              filterName, ['filters', activityName]);
 
               if (filter.hasOwnProperty('value')) {
-               
+
                 var value = filter.value;
-                var valueIsArray ='[object Array]' === toString.call(value) 
+                var valueIsArray ='[object Array]' === toString.call(value)
 
                 if (!(valueIsArray || 'string' === typeof value)) {
-                
-                  errors.InvalidActivitiesFilterValue = 
-                    'Activity filter value property must be of type `array` or `string`'; 
-                
+
+                  errors.InvalidActivitiesFilterValue =
+                    'Activity filter value property must be of type `array` or `string`';
+
                 } else if (valueIsArray) {
-                  
+
                   hasValidSchema(value, ACTIVITY_FILTER_OBJECT_VALUE_SCHEMA,
                                  'value', ['filters', activityName]);
-                
+
                 }
               }
             }
