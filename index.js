@@ -17,6 +17,7 @@ var BANNED_ORIGINS = [
 ];
 
 var Manifest = function () {
+
   this.manifest = {};
 
   var errors = {};
@@ -50,6 +51,7 @@ var Manifest = function () {
       hasValidRedirects();
       hasValidRole();
       hasValidPrecompile();
+      hasValidPermissions();
       hasValidActivitiesFilters();
     }
 
@@ -519,31 +521,91 @@ var Manifest = function () {
     }
   };
 
-  var ACTIVITY_FILTER_OBJECT_SCHEMA = {
-    type: 'object',
-    additionalProperties: false,
-    properties: {
-      required: { type: 'boolean' },
-      min: { type: 'number' },
-      max: { type: 'number' },
-      pattern: { type: 'string' },
-      patternFlags: {
-        type: 'string',
-        maxLength: 4,
-        pattern: '^[igmy]+$'
-      },
-      // NOTE: This is funky, because `value` can be a string or an array, so
-      // it needs special validation below.
-      value: { }
+  var hasValidPermissions = function () {
+    var permissions = self.manifest.permissions;
+
+    if (!permissions || !('object' === typeof permissions)) {
+      return;
+    }
+
+    var type = self.manifest.type || 'web';
+    var expectedPermissions = self.PERMISSIONS[type];
+    if (!expectedPermissions) {
+      return;
+    }
+
+    for (var name in permissions) {
+
+      if (expectedPermissions.indexOf(name) === -1) {
+        errors['InvalidPermissionForType' + camelCase(type)] =
+          'Permissions for type `'+ type + '` must be one of ' +
+          expectedPermissions.join(', ');
+      }
+
+      var schema = PERMISSION_SCHEMA;
+      if (self.PERMISSIONS_ACCESS[name]) {
+        schema.required = ['description', 'access'];
+        schema.properties.access = PERMISSION_ACCESS_SCHEMA;
+        schema.properties.access.oneOf = self.PERMISSIONS_ACCESS[name];
+      } else {
+        schema.required = ['description'];
+        if (schema.access) {
+          delete schema.access;
+        }
+      }
+      hasValidSchema(permissions[name], schema, name, ['permissions']);
+
     }
   };
 
-  // But if `value` is an array, it should only have strings...
-  var ACTIVITY_FILTER_OBJECT_VALUE_SCHEMA = {
-    type: 'array',
-    items: {
-      type: 'string'
-    }
+  var PERMISSION_SCHEMA = {
+      "type": "object",
+      "required": ["description"],
+      "additionalProperties": false,
+      "properties": {
+          "description": { "type": "string" }
+      }
+  };
+
+  var PERMISSION_ACCESS_SCHEMA = {
+      "type": "string",
+      "oneOf": ["readonly", "readwrite", "readcreate", "createonly"]
+  }
+
+  this.PERMISSIONS = {
+    web: [
+      'alarms', 'audio-capture', 'audio-channel-content',
+      'audio-channel-normal', 'desktop-notification', 'fmradio',
+      'geolocation', 'push', 'storage', 'video-capture'
+    ],
+    privileged: [
+      'audio-channel-alarm', 'audio-channel-notification', 'browser',
+      'contacts', 'device-storage:pictures', 'device-storage:videos',
+      'device-storage:music', 'device-storage:sdcard', 'feature-detection',
+      'input', 'mobilenetwork', 'speaker-control', 'systemXHR', 'tcp-socket'
+    ],
+    certified: [
+      'audio-channel-publicnotification', 'background-sensors',
+      'backgroundservice', 'bluetooth', 'camera', 'cellbroadcast',
+      'downloads', 'device-storage:apps', 'embed-apps', 'idle',
+      'mobileconnection', 'moz-attention', 'moz-audio-channel-telephony',
+      'moz-audio-channel-ringer', 'moz-firefox-accounts', 'network-events',
+      'networkstats-manage', 'open-remote-window', 'permissions',
+      'phonenumberservice', 'power', 'settings', 'sms', 'telephony', 'time',
+      'voicemail', 'webapps-manage', 'wifi-manage', 'wappush'
+    ]
+  };
+
+  var _FULL_PERMISSIONS = ['readonly', 'readwrite', 'readcreate', 'createonly'];
+
+  this.PERMISSIONS_ACCESS = {
+    contacts: _FULL_PERMISSIONS,
+    'device-storage:apps': _FULL_PERMISSIONS,
+    'device-storage:music': _FULL_PERMISSIONS,
+    'device-storage:pictures': _FULL_PERMISSIONS,
+    'device-storage:sdcard': _FULL_PERMISSIONS,
+    'device-storage:videos': _FULL_PERMISSIONS,
+    settings: ['readonly', 'readwrite']
   };
 
   var hasValidActivitiesFilters = function () {
@@ -595,6 +657,34 @@ var Manifest = function () {
       }
     }
   };
+
+  var ACTIVITY_FILTER_OBJECT_SCHEMA = {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      required: { type: 'boolean' },
+      min: { type: 'number' },
+      max: { type: 'number' },
+      pattern: { type: 'string' },
+      patternFlags: {
+        type: 'string',
+        maxLength: 4,
+        pattern: '^[igmy]+$'
+      },
+      // NOTE: This is funky, because `value` can be a string or an array, so
+      // it needs special validation below.
+      value: { }
+    }
+  };
+
+  // But if `value` is an array, it should only have strings...
+  var ACTIVITY_FILTER_OBJECT_VALUE_SCHEMA = {
+    type: 'array',
+    items: {
+      type: 'string'
+    }
+  };
+
 };
 
 // Stealing some notions from underscore.js

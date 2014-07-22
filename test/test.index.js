@@ -1107,65 +1107,64 @@ describe('validate', function () {
   });
 
   describe('permissions', function () {
-    var PERMISSIONS = {
-      web: [
-        'alarms', 'audio-capture', 'audio-channel-content',
-        'audio-channel-normal', 'desktop-notification', 'fmradio',
-        'geolocation', 'push', 'storage', 'video-capture'
-      ],
-      privileged: [
-        'audio-channel-alarm', 'audio-channel-notification', 'browser',
-        'contacts', 'device-storage:pictures', 'device-storage:videos',
-        'device-storage:music', 'device-storage:sdcard', 'feature-detection',
-        'input', 'mobilenetwork', 'speaker-control', 'systemXHR', 'tcp-socket'
-      ],
-      certified: [
-        'audio-channel-publicnotification', 'background-sensors',
-        'backgroundservice', 'bluetooth', 'camera', 'cellbroadcast',
-        'downloads', 'device-storage:apps', 'embed-apps', 'idle',
-        'mobileconnection', 'moz-attention', 'moz-audio-channel-telephony',
-        'moz-audio-channel-ringer', 'moz-firefox-accounts', 'network-events',
-        'networkstats-manage', 'open-remote-window', 'permissions',
-        'phonenumberservice', 'power', 'settings', 'sms', 'telephony', 'time',
-        'voicemail', 'webapps-manage', 'wifi-manage', 'wappush'
-      ]
-    };
 
-    var _FULL_PERMISSIONS = ['readonly', 'readwrite', 'readcreate', 'createonly'];
-
-    var PERMISSIONS_ACCESS = {
-      contacts: _FULL_PERMISSIONS,
-      'device-storage:apps': _FULL_PERMISSIONS,
-      'device-storage:music': _FULL_PERMISSIONS,
-      'device-storage:pictures': _FULL_PERMISSIONS,
-      'device-storage:sdcard': _FULL_PERMISSIONS,
-      'device-storage:videos': _FULL_PERMISSIONS,
-      settings: ['readonly', 'readwrite']
-    }
-
-    function setPermissions () {
+    function setPermissions (type) {
+      type = type || 'web';
+      
+      common.type = type;
       common.permissions = {};
 
-      for (var k in PERMISSIONS) {
-        var set = PERMISSIONS[k];
-
-        set.forEach(function (perm) {
-          common.permissions[perm] = {
-            'description': 'Required to make things good.'
-          };
-
-          if (PERMISSIONS_ACCESS.hasOwnProperty(perm)) {
-            common.permissions[perm].access = PERMISSIONS_ACCESS[perm][0];
-          }
-        });
+      var packaged = ('web' !== type);
+      if (packaged) {
+        common.launch_path = '/index.html';
       }
+
+      var set = m.PERMISSIONS[type];
+
+      set.forEach(function (perm) {
+        common.permissions[perm] = {
+          'description': 'Required to make things good.'
+        };
+
+        if (m.PERMISSIONS_ACCESS.hasOwnProperty(perm)) {
+          common.permissions[perm].access = m.PERMISSIONS_ACCESS[perm][0];
+        }
+      });
+
+      return packaged;
     }
 
-    it('should be valid with the full expected set of permissions', function () {
-      setPermissions();
+    it('should be valid when permissions are used with the correct app type', function () {
+      ['web', 'privileged', 'certified'].forEach(function (app_type) {
+        var packaged = setPermissions(app_type);
 
-      var results = m.validate(common);
-      results.errors.should.be.empty;
+        var results = m.validate(common, {
+          packaged: packaged
+        });
+        results.errors.should.be.empty;
+      });
+    });
+
+    it('should be invalid when permissions are used with the incorrect app type', function () {
+      var expectedErrors = {
+        web: 'InvalidPermissionForTypeWeb',
+        privileged: 'InvalidPermissionForTypePrivileged',
+        certified: 'InvalidPermissionForTypeCertified'
+      };
+
+      ['web', 'privileged', 'certified'].forEach(function (app_type) {
+        ['web', 'privileged', 'certified'].forEach(function (incorrect_type) {
+          if (incorrect_type !== app_type) {
+            var packaged = setPermissions(incorrect_type);
+            common.type = app_type;
+
+            var results = m.validate(common, {
+              packaged: packaged
+            });
+            results.errors[expectedErrors[app_type]].should.not.be.empty;
+          }
+        });
+      });
     });
 
     it('should be invalid when not an object', function () {
@@ -1192,8 +1191,7 @@ describe('validate', function () {
       };
 
       var results = m.validate(common);
-      results.errors.UnexpectedPropertyPermissions.should.equal(
-        'Unexpected property `foo` found in `permissions`');
+      results.errors.InvalidPermissionForTypeWeb.should.exist;
     });
 
     it('should be invalid where a permission is missing a description', function () {
@@ -1206,28 +1204,34 @@ describe('validate', function () {
     });
 
     it('should be invalid where a permission is missing access', function () {
-      setPermissions();
+      setPermissions('privileged');
       delete common.permissions.contacts.access;
 
-      var results = m.validate(common);
+      var results = m.validate(common, {
+        packaged: true
+      });
       results.errors.MandatoryFieldPermissionsContactsAccess.should.equal(
         'Mandatory field access is missing');
     });
 
     it('should be invalid where a permission has an invalid access', function () {
-      setPermissions();
+      setPermissions('privileged');
       common.permissions.contacts.access = 'asdf';
 
-      var results = m.validate(common);
+      var results = m.validate(common, {
+        packaged: true
+      });
       results.errors.InvalidStringTypePermissionsContactsAccess.should.equal(
         '`access` must be one of the following: readonly,readwrite,readcreate,createonly');
     });
 
     it('should be invalid where a permission has an unavailable access', function () {
-      setPermissions();
+      setPermissions('certified');
       common.permissions.settings.access = 'createonly';
 
-      var results = m.validate(common);
+      var results = m.validate(common, {
+        packaged: true
+      });
       results.errors.InvalidStringTypePermissionsSettingsAccess.should.equal(
         '`access` must be one of the following: readonly,readwrite');
     });

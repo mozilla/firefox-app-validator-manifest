@@ -154,44 +154,7 @@
             "pattern": "(^app://[a-z0-9]+([-.]{1}[a-z0-9]+)*)|(.[a-z]{2,5}$)"
         },
         "permissions": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "settings": {
-                    "type": "object",
-                    "required": ["description", "access"],
-                    "additionalProperties": false,
-                    "properties": {
-                        "description": { "type": "string" },
-                        "access": {
-                            "type": "string",
-                            "oneOf": ["readonly", "readwrite"]
-                        }
-                    }
-                }
-            },
-            "patternProperties": {
-                "^(contacts|device-storage:apps|device-storage:music|device-storage:pictures|device-storage:sdcard|device-storage:videos)$": {
-                    "type": "object",
-                    "required": ["description", "access"],
-                    "additionalProperties": false,
-                    "properties": {
-                        "description": { "type": "string" },
-                        "access": {
-                            "type": "string",
-                            "oneOf": ["readonly", "readwrite", "readcreate", "createonly"]
-                        }
-                    }
-                },
-                "^(alarms|audio-capture|audio-channel-content|audio-channel-normal|moz-audio-channel-telephony|desktop-notification|moz-firefox-accounts|fmradio|geolocation|push|storage|video-capture|audio-channel-alarm|audio-channel-notification|browser|feature-detection|input|mobilenetwork|speaker-control|systemXHR|tcp-socket|moz-attention|moz-audio-channel-ringer|audio-channel-publicnotification|background-sensors|backgroundservice|bluetooth|camera|cellbroadcast|downloads||embed-apps|idle|mobileconnection|network-events|networkstats-manage|open-remote-window|permissions|phonenumberservice|power|sms|telephony|time|voicemail|webapps-manage|wifi-manage|wappush)$": {
-                    "type": "object",
-                    "required": ["description"],
-                    "additionalProperties": false,
-                    "properties": {
-                        "description": { "type": "string" }
-                    }
-                }
-            }
+            "type": "object"
         },
         "precompile": {
             "type": "array",
