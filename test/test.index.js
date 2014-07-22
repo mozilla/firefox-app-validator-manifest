@@ -1232,4 +1232,24 @@ describe('validate', function () {
         '`access` must be one of the following: readonly,readwrite');
     });
   });
+
+  describe('precompile', function () {
+    it('should be invalid if a non-packaged app has the `precompile` property', function () {
+      common.type = 'web';
+      common.precompile = ['stuff.js'];
+
+      var results = m.validate(common);
+      results.errors.InvalidPrecompileType.should.equal('Apps that are not ' +
+        'packaged or privileged may not use the `precompile` field of the manifest');
+    });
+
+    it('should be valid if a packaged app has the `precompile` property', function () {
+      common.type = 'web';
+      common.launch_path = '/';
+      common.precompile = ['stuff.js'];
+
+      var results = m.validate(common, {packaged: true});
+      results.errors.should.be.empty;
+    });
+  });
 });

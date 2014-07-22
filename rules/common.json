@@ -193,6 +193,12 @@
                 }
             }
         },
+        "precompile": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "redirects": {
             "type": "array",
             "items": {
