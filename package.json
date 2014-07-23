@@ -1,6 +1,6 @@
 {
   "name": "firefox-app-validator-manifest",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "App validation (manifest) for https://marketplace.firefox.com",
   "main": "index.js",
   "dependencies": {
