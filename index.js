@@ -515,7 +515,7 @@ var Manifest = function () {
   var hasValidPrecompile = function () {
     if (self.manifest.precompile) {
       if (!self.options.packaged) {
-        errors.InvalidPrecompileType = 'Apps that are not packaged or privileged may not use ' +
+        errors.InvalidPrecompileType = 'Apps that are not packaged may not use ' +
           'the `precompile` field of the manifest';
       }
     }

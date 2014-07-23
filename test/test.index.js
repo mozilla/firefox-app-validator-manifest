@@ -1110,7 +1110,7 @@ describe('validate', function () {
 
     function setPermissions (type) {
       type = type || 'web';
-      
+
       common.type = type;
       common.permissions = {};
 
@@ -1244,7 +1244,7 @@ describe('validate', function () {
 
       var results = m.validate(common);
       results.errors.InvalidPrecompileType.should.equal('Apps that are not ' +
-        'packaged or privileged may not use the `precompile` field of the manifest');
+        'packaged may not use the `precompile` field of the manifest');
     });
 
     it('should be valid if a packaged app has the `precompile` property', function () {
