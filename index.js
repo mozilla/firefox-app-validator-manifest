@@ -579,19 +579,21 @@ var Manifest = function () {
       'geolocation', 'push', 'storage', 'video-capture'
     ],
     privileged: [
-      'audio-channel-alarm', 'audio-channel-notification', 'browser',
+      'audio-channel-alarm', 'audio-channel-notification', 'browser', 'camera',
       'contacts', 'device-storage:pictures', 'device-storage:videos',
       'device-storage:music', 'device-storage:sdcard', 'feature-detection',
-      'input', 'mobilenetwork', 'speaker-control', 'systemXHR', 'tcp-socket'
+      'input', 'mobileid', 'mobilenetwork', 'moz-attention',
+      'moz-audio-channel-ringer', 'moz-audio-channel-telephony',
+      'moz-firefox-accounts', 'speaker-control', 'systemXHR', 'tcp-socket'
     ],
     certified: [
-      'audio-channel-publicnotification', 'background-sensors',
-      'backgroundservice', 'bluetooth', 'camera', 'cellbroadcast',
-      'downloads', 'device-storage:apps', 'embed-apps', 'idle',
-      'mobileconnection', 'moz-attention', 'moz-audio-channel-telephony',
-      'moz-audio-channel-ringer', 'moz-firefox-accounts', 'network-events',
-      'networkstats-manage', 'open-remote-window', 'permissions',
-      'phonenumberservice', 'power', 'settings', 'sms', 'telephony', 'time',
+      'attention', 'audio-channel-publicnotification', 'audio-channel-ringer',
+      'audio-channel-telephony', 'background-sensors', 'backgroundservice',
+      'bluetooth', 'cellbroadcast', 'downloads', 'deprecated-hwvideo',
+      'device-storage:apps', 'device-storage:crashes', 'embed-apps',
+      'firefox-accounts', 'idle', 'input-manage', 'networkstats-manage', 'nfc',
+      'nfc-manager', 'open-remote-window', 'permissions', 'phonenumberservice', 
+      'power', 'resourcestats-manage', 'settings', 'sms', 'telephony', 'time',
       'voicemail', 'webapps-manage', 'wifi-manage', 'wappush'
     ]
   };
