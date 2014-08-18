@@ -142,13 +142,12 @@ describe('validate', function () {
     });
 
     it('should have an invalid default_locale', function () {
-      common.locales = {
-        es: {}
-      };
+      common.default_locale = 'es';
 
       var results = m.validate(common);
+
       results.errors.InvalidDefaultLocale.should.equal(
-        '`default_locale` must match one of the keys in `locales`');
+        '`default_locale` is required if `locales` exists');
     });
 
     it('should have a valid default_locale', function () {

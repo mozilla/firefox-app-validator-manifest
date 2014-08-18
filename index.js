@@ -344,23 +344,8 @@ var Manifest = function () {
   };
 
   var hasValidDefaultLocale = function () {
-    // only relevant if locales property is not empty
-    var error = '`default_locale` must match one of the keys in `locales`';
-
-    if (self.manifest.locales) {
-      if (!self.manifest.default_locale) {
-        errors.InvalidDefaultLocale = error;
-      } else {
-        var languages = [];
-
-        for (var i in self.manifest.locales) {
-          languages.push(i);
-        }
-
-        if (languages.indexOf(self.manifest.default_locale) === -1) {
-          errors.InvalidDefaultLocale = error;
-        }
-      }
+    if (self.manifest.default_locale && !self.manifest.locales) {
+      errors.InvalidDefaultLocale = '`default_locale` is required if `locales` exists';
     }
   };
 
@@ -593,7 +578,7 @@ var Manifest = function () {
       'bluetooth', 'cellbroadcast', 'downloads', 'deprecated-hwvideo',
       'device-storage:apps', 'device-storage:crashes', 'embed-apps',
       'firefox-accounts', 'idle', 'input-manage', 'networkstats-manage', 'nfc',
-      'nfc-manager', 'open-remote-window', 'permissions', 'phonenumberservice', 
+      'nfc-manager', 'open-remote-window', 'permissions', 'phonenumberservice',
       'power', 'resourcestats-manage', 'settings', 'sms', 'telephony', 'time',
       'voicemail', 'webapps-manage', 'wifi-manage', 'wappush'
     ]
