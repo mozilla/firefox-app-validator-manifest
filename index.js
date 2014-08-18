@@ -2,6 +2,7 @@
 
 var common = require('./rules/common.json');
 var sMarketplace = require('./rules/marketplace.json');
+var url = require('./libwrappers/url')();
 
 // TODO: These constants should probably go somewhere better.
 var DEFAULT_WEBAPP_MRKT_URLS = [
@@ -737,13 +738,10 @@ var glueObjectPath = function (prefix, parents) {
 };
 
 var parseUrl = function (path) {
-  // TODO: Could replace this with a different implementation to make it
-  // node-agnostic and work in a browser. http://nodejs.org/api/url.html
-  return require('url').parse(path);
+  return url.parse(path);
 };
 
 var pathValid = function (path, options) {
-
   if (path == '*') {
     return !!options.canBeAsterisk;
   }
