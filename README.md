@@ -16,7 +16,9 @@ This is the Firefox App manifest validator for verifying that your `manifest.web
 
     var fs = require('fs');
     var Manifest = require('firefox-app-validator-manifest');
-    var ff = new Manifest();
+    var ff = new Manifest({
+        url: '/path/to/custom/url/module' // custom URL module if you want to override the node one
+    });
 
     fs.readFile('manifest.webapp', 'utf8', function (err, data) {
       if (!err) {
@@ -34,7 +36,7 @@ second parameter, however, can be an object containing validation options.
 
 These options include:
 
-* `listed` - default `false`, flag whether or not this app will be listed on the Marketplace 
+* `listed` - default `false`, flag whether or not this app will be listed on the Marketplace
 
 * `packaged` - default `false`, flag whether or not this app is packaged, rather than a plain web app
 

@@ -2,7 +2,6 @@
 
 var common = require('./rules/common.json');
 var sMarketplace = require('./rules/marketplace.json');
-var url = require('./libwrappers/url')();
 
 // TODO: These constants should probably go somewhere better.
 var DEFAULT_WEBAPP_MRKT_URLS = [
@@ -17,14 +16,59 @@ var BANNED_ORIGINS = [
   'mozilla.org'
 ];
 
-var Manifest = function () {
+var Manifest = function (options) {
+  if (!options) {
+    options = {};
+  }
 
   this.manifest = {};
+  this.urlLib = options.url || false;
 
   var errors = {};
   var warnings = {};
 
   var self = this;
+
+  var pathValid = function (path, options) {
+    if (path == '*') {
+      return !!options.canBeAsterisk;
+    }
+
+    if (path.indexOf('data:') !== -1) {
+      return !!options.canBeData;
+    }
+
+    // Nothing good comes from relative protocols.
+    if (path.indexOf('//') === 0) {
+      return false;
+    }
+
+    // Try to parse the URL.
+    try {
+      var url = require('./libwrappers/url')(self.urlLib);
+      var parsed = parseUrl(path, url);
+
+      // If the URL is relative, return whether the URL can be relative.
+      if (!parsed.protocol || !parsed.host) {
+        if (parsed.pathname && parsed.pathname.indexOf('/') === 0) {
+          return !!options.canBeAbsolute;
+        } else {
+          return !!options.canBeRelative;
+        }
+      }
+
+      // If the URL is absolute but uses an invalid protocol, return False
+      if (['http:', 'https:'].indexOf(parsed.protocol.toLowerCase()) === -1) {
+        return false;
+      }
+
+      return !!options.canHaveProtocol;
+
+    } catch (e) {
+      // If there was an error parsing the URL, return False.
+      return false;
+    }
+  };
 
   this.validate = function (content, options) {
     errors = {};
@@ -722,48 +766,8 @@ var glueObjectPath = function (prefix, parents) {
   return prefix + parts.join('.');
 };
 
-var parseUrl = function (path) {
+var parseUrl = function (path, url) {
   return url.parse(path);
-};
-
-var pathValid = function (path, options) {
-  if (path == '*') {
-    return !!options.canBeAsterisk;
-  }
-
-  if (path.indexOf('data:') !== -1) {
-    return !!options.canBeData;
-  }
-
-  // Nothing good comes from relative protocols.
-  if (path.indexOf('//') === 0) {
-    return false;
-  }
-
-  // Try to parse the URL.
-  try {
-    var parsed = parseUrl(path);
-
-    // If the URL is relative, return whether the URL can be relative.
-    if (!parsed.protocol || !parsed.host) {
-      if (parsed.pathname && parsed.pathname.indexOf('/') === 0) {
-        return !!options.canBeAbsolute;
-      } else {
-        return !!options.canBeRelative;
-      }
-    }
-
-    // If the URL is absolute but uses an invalid protocol, return False
-    if (['http:', 'https:'].indexOf(parsed.protocol.toLowerCase()) === -1) {
-      return false;
-    }
-
-    return !!options.canHaveProtocol;
-
-  } catch (e) {
-    // If there was an error parsing the URL, return False.
-    return false;
-  }
 };
 
 module.exports = Manifest;
