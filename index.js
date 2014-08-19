@@ -388,7 +388,7 @@ var Manifest = function (options) {
   };
 
   var hasValidDefaultLocale = function () {
-    if (self.manifest.default_locale && !self.manifest.locales) {
+    if (self.manifest.default_locale && (!self.manifest.locales || self.manifest.locales.length < 1)) {
       errors.InvalidDefaultLocale = '`default_locale` is required if `locales` exists';
     }
   };
