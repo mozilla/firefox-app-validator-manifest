@@ -16,6 +16,57 @@ var BANNED_ORIGINS = [
   'mozilla.org'
 ];
 
+// Stealing some notions from underscore.js
+var ObjProto = Object.prototype;
+var toString = ObjProto.toString;
+
+var clean = function (word) {
+  return word.toString().trim();
+};
+
+var camelCase = function (word) {
+  var words = word.toString().split('_');
+  var finalWord = [];
+  words.forEach(function (w) {
+    finalWord.push(clean(w.charAt(0).toUpperCase() + w.slice(1)));
+  });
+
+  return finalWord.join('');
+};
+
+// glueKey takes a string prefix, an array of string parents, and then any
+// number of additional parameters. Except for the prefix, these are all
+// converted to CamelCase and concatenated together
+var glueKey = function (prefix, parents) {
+  var rest = Array.prototype.slice.call(arguments, 2);
+  var parts = parents.concat(rest).filter(function (item) {
+    return item !== '';
+  }).map(function (item) {
+    if (/^\d+$/.test(item)) {
+      return 'Item';
+    } else {
+      return camelCase(item);
+    }
+  });
+  return prefix + parts.join('');
+};
+
+// glueKey takes a string prefix, an array of string parents, and then any
+// number of additional parameters. These are all concatenated together with a
+// '.' separator.
+var glueObjectPath = function (prefix, parents) {
+  var rest = Array.prototype.slice.call(arguments, 2);
+  var parts = parents.concat(rest).filter(function (item) {
+    return item !== '';
+  });
+
+  return prefix + parts.join('.');
+};
+
+var parseUrl = function (path, url) {
+  return url.parse(path);
+};
+
 var Manifest = function (options) {
   if (!options) {
     options = {};
@@ -68,42 +119,6 @@ var Manifest = function (options) {
       // If there was an error parsing the URL, return False.
       return false;
     }
-  };
-
-  this.validate = function (content, options) {
-    errors = {};
-    warnings = {};
-
-    this.options = options || {
-      listed: false,
-      packaged: false
-    };
-
-    if (hasValidJSON(content)) {
-      hasValidSchema(self.manifest, common);
-
-      hasMaximumIdealLengthForName();
-      hasValidDeveloperUrl();
-      hasValidLaunchPath();
-      hasValidIconSizeAndPath();
-      hasValidVersion();
-      hasValidDefaultLocale();
-      hasValidInstallsAllowedFrom();
-      hasValidMessages();
-      hasValidType();
-      hasValidAppCachePath();
-      hasValidOrigin();
-      hasValidRedirects();
-      hasValidRole();
-      hasValidPrecompile();
-      hasValidPermissions();
-      hasValidActivitiesFilters();
-    }
-
-    return {
-      errors: errors,
-      warnings: warnings
-    };
   };
 
   var hasValidJSON = function (content) {
@@ -717,57 +732,41 @@ var Manifest = function (options) {
     }
   };
 
-};
+  this.validate = function (content, options) {
+    errors = {};
+    warnings = {};
 
-// Stealing some notions from underscore.js
-var ObjProto = Object.prototype;
-var toString = ObjProto.toString;
+    this.options = options || {
+      listed: false,
+      packaged: false
+    };
 
-var clean = function (word) {
-  return word.toString().trim();
-};
+    if (hasValidJSON(content)) {
+      hasValidSchema(self.manifest, common);
 
-var camelCase = function (word) {
-  var words = word.toString().split('_');
-  var finalWord = [];
-  words.forEach(function (w) {
-    finalWord.push(clean(w.charAt(0).toUpperCase() + w.slice(1)));
-  });
-
-  return finalWord.join('');
-};
-
-// glueKey takes a string prefix, an array of string parents, and then any
-// number of additional parameters. Except for the prefix, these are all
-// converted to CamelCase and concatenated together
-var glueKey = function (prefix, parents) {
-  var rest = Array.prototype.slice.call(arguments, 2);
-  var parts = parents.concat(rest).filter(function (item) {
-    return item !== '';
-  }).map(function (item) {
-    if (/^\d+$/.test(item)) {
-      return 'Item';
-    } else {
-      return camelCase(item);
+      hasMaximumIdealLengthForName();
+      hasValidDeveloperUrl();
+      hasValidLaunchPath();
+      hasValidIconSizeAndPath();
+      hasValidVersion();
+      hasValidDefaultLocale();
+      hasValidInstallsAllowedFrom();
+      hasValidMessages();
+      hasValidType();
+      hasValidAppCachePath();
+      hasValidOrigin();
+      hasValidRedirects();
+      hasValidRole();
+      hasValidPrecompile();
+      hasValidPermissions();
+      hasValidActivitiesFilters();
     }
-  });
-  return prefix + parts.join('');
-};
 
-// glueKey takes a string prefix, an array of string parents, and then any
-// number of additional parameters. These are all concatenated together with a
-// '.' separator.
-var glueObjectPath = function (prefix, parents) {
-  var rest = Array.prototype.slice.call(arguments, 2);
-  var parts = parents.concat(rest).filter(function (item) {
-    return item !== '';
-  });
-
-  return prefix + parts.join('.');
-};
-
-var parseUrl = function (path, url) {
-  return url.parse(path);
+    return {
+      errors: errors,
+      warnings: warnings
+    };
+  };
 };
 
 module.exports = Manifest;
