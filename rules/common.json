@@ -151,7 +151,7 @@
         },
         "origin": {
             "type": "string",
-            "pattern": "(^app://[a-z0-9]+([-.]{1}[a-z0-9]+)*)|(.[a-z]{2,5}$)"
+            "pattern": "\\w+$"
         },
         "permissions": {
             "type": "object"

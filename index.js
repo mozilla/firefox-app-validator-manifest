@@ -10,11 +10,7 @@ var DEFAULT_WEBAPP_MRKT_URLS = [
   'https://marketplace-dev.allizom.org'
 ];
 
-var BANNED_ORIGINS = [
-  'gaiamobile.org',
-  'mozilla.com',
-  'mozilla.org'
-];
+var BANNED_ORIGINS = /gaiamobile\.org|mozilla\.com|mozilla\.org/;
 
 // Stealing some notions from underscore.js
 var ObjProto = Object.prototype;
@@ -529,11 +525,13 @@ var Manifest = function (options) {
       } else {
         var pattern = new RegExp(common.properties.origin.pattern);
 
-        if (pattern.test(clean(self.manifest.origin)) === false) {
+        if (!pattern.test(clean(self.manifest.origin))) {
           errors.InvalidOriginFormat = 'Origin format is invalid';
-        } else if (BANNED_ORIGINS.indexOf(self.manifest.origin.split('//')[1]) > -1) {
+        } else if (!!BANNED_ORIGINS.exec(self.manifest.origin)) {
           errors.InvalidOriginReference = 'App origins may not reference any ' +
-            'of the following: ' + BANNED_ORIGINS.join(',');
+            'of the following: ' + BANNED_ORIGINS.toString()
+                                                 .replace(/\/|\\/g, '')
+                                                 .replace(/\|/g, ',');
         }
       }
     }

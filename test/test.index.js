@@ -862,7 +862,7 @@ describe('validate', function () {
   describe('origin', function () {
     it('should be invalid when the origin is in the incorrect format', function () {
       common.type = 'privileged';
-      common.origin = '1';
+      common.origin = '%%%';
 
       var results = m.validate(common);
       results.errors.InvalidOriginFormat.should.equal('Origin format is invalid');
@@ -893,6 +893,11 @@ describe('validate', function () {
       common.launch_path = '/foo.html';
 
       var results = m.validate(common, {packaged: true});
+      results.errors.should.be.empty;
+
+      common.origin = 'valid';
+
+      results = m.validate(common, {packaged: true});
       results.errors.should.be.empty;
     });
   });
