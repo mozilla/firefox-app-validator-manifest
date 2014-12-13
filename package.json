@@ -1,5 +1,5 @@
 {
-  "name": "@mozillaorg/firefox-app-validator-manifest",
+  "name": "@mozilla/firefox-app-validator-manifest",
   "version": "1.1.8",
   "description": "App validation (manifest) for https://marketplace.firefox.com",
   "main": "index.js",
