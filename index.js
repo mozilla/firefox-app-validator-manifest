@@ -627,7 +627,8 @@ var Manifest = function (options) {
       'device-storage:music', 'device-storage:sdcard', 'feature-detection',
       'input', 'mobileid', 'mobilenetwork', 'moz-attention',
       'moz-audio-channel-ringer', 'moz-audio-channel-telephony',
-      'moz-firefox-accounts', 'speaker-control', 'systemXHR', 'tcp-socket'
+      'moz-firefox-accounts', 'speaker-control', 'systemXHR', 'tcp-socket',
+      'homescreen-webapps-manage'
     ],
     certified: [
       'attention', 'audio-channel-publicnotification', 'audio-channel-ringer',
